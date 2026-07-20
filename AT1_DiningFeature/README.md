@@ -5,7 +5,7 @@
 * **Student ID:** STU240156  
 
 ## GitHub Repository
-* **Repository URL:** 
+* **Repository URL:** https://github.com/eaumal123/IS305-DWU240156.git
 
 ---
 
