@@ -79,5 +79,35 @@ class MealBooking {
         this.#bookingStatus = value;
     }
 
+  //Create a method named calculateTotal() adjusted to actual prices
+    calculateTotal() {
+        let mealPrice = 0.00;
+        // Normalize string to lowercase to prevent matching errors (e.g., "breakfast" vs "Breakfast")
+        const type = this.#mealType.toLowerCase();
+
+        if (type.includes("breakfast")) {
+            mealPrice = 10.00;
+        } else if (type.includes("lunch")) {
+            mealPrice = 15.00;
+        } else if (type.includes("dinner")) {
+            mealPrice = 20.00;
+        } else {
+            mealPrice = 0.00; // Default case if unmatched
+        }
+
+        return this.#quantity * mealPrice;
+    }
+
+    //Create a method named getSummary()
+    getSummary() {
+        return `Booking Summary:
+- Student: ${this.#studentName} (${this.#studentId})
+- Meal: ${this.#mealType} on ${this.#mealDate}
+- Quantity: ${this.#quantity}
+- Dietary Note: ${this.#dietaryNote || "None"}
+- Status: ${this.#bookingStatus}
+- Total Cost: K${this.calculateTotal().toFixed(2)}`;
+    }
 }
+
 module.exports = MealBooking;
