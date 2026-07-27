@@ -16,106 +16,84 @@ class MealBooking {
     #dietaryNote;
     #bookingStatus;
 
-    constructor(studentId, studentName, mealDate, mealType, quantity, dietaryNote) {
-        this.#studentId = studentId;
-        this.#studentName = studentName;
-        this.#mealDate = mealDate;
-        this.#mealType = mealType;
-        this.#quantity = quantity;
-        this.#dietaryNote = dietaryNote;
+    constructor(studentId, studentName, mealDate, mealType, quantity, dietaryNote = "") {
+        // Validation for missing required values
+        if (!studentId || !studentId.trim()) throw new Error("Student ID is required.");
+        if (!studentName || !studentName.trim()) throw new Error("Student Name is required.");
+        if (!mealDate || !mealDate.trim()) throw new Error("Meal Date is required.");
+
+        // Normalize and validate meal type
+        const formattedMealType = MealBooking.formatMealType(mealType);
+        if (!["Breakfast", "Lunch", "Dinner"].includes(formattedMealType)) {
+            throw new Error("Invalid meal type. Allowed types are: Breakfast, Lunch, or Dinner.");
+        }
+
+        // Validate quantity
+        const numQuantity = Number(quantity);
+        if (isNaN(numQuantity) || numQuantity < 1) {
+            throw new Error("Quantity must be a number equal to 1 or greater.");
+        }
+
+        this.#studentId = studentId.trim();
+        this.#studentName = studentName.trim();
+        this.#mealDate = mealDate.trim();
+        this.#mealType = formattedMealType;
+        this.#quantity = numQuantity;
+        this.#dietaryNote = dietaryNote.trim() || "None";
         this.#bookingStatus = "Pending";
     }
 
-    //Create appropriate getters and setters
-    
-    // Student ID
-    get studentId() {
-        return this.#studentId;
-    }
-    set studentId(value) {
-        this.#studentId = value;
+    // Helper method to standardize meal type formatting
+    static formatMealType(type) {
+        if (!type || typeof type !== 'string') return "";
+        const clean = type.trim().toLowerCase();
+        return clean.charAt(0).toUpperCase() + clean.slice(1);
     }
 
-    // Student Name
-    get studentName() {
-        return this.#studentName;
-    }
-    set studentName(value) {
-        this.#studentName = value;
+    // Getters
+    get studentId() { return this.#studentId; }
+    get studentName() { return this.#studentName; }
+    get mealDate() { return this.#mealDate; }
+    get mealType() { return this.#mealType; }
+    get quantity() { return this.#quantity; }
+    get dietaryNote() { return this.#dietaryNote; }
+    get bookingStatus() { return this.#bookingStatus; }
+
+    // Controlled Status Methods
+    confirmBooking() {
+        this.#bookingStatus = "Confirmed";
     }
 
-    // Meal Date
-    get mealDate() {
-        return this.#mealDate;
-    }
-    set mealDate(value) {
-        this.#mealDate = value;
+    cancelBooking() {
+        this.#bookingStatus = "Cancelled";
     }
 
-    // Meal Type
-    get mealType() {
-        return this.#mealType;
-    }
-    set mealType(value) {
-        this.#mealType = value;
-    }
-
-    // Quantity
-    get quantity() {
-        return this.#quantity;
-    }
-    set quantity(value) {
-        if (value > 0) {
-            this.#quantity = value;
-        } else {
-            console.log("Quantity must be greater than 0.");
-        }
-    }
-
-    // Dietary Note
-    get dietaryNote() {
-        return this.#dietaryNote;
-    }
-    set dietaryNote(value) {
-        this.#dietaryNote = value;
-    }
-
-    // Booking Status
-    get bookingStatus() {
-        return this.#bookingStatus;
-    }
-    set bookingStatus(value) {
-        this.#bookingStatus = value;
-    }
-
-  //Create a method named calculateTotal() adjusted to actual prices
+    // Calculate Total Cost (meal price x quantity)
     calculateTotal() {
         let mealPrice = 0.00;
-        // Normalize string to lowercase to prevent matching errors (e.g., "breakfast" vs "Breakfast")
-        const type = this.#mealType.toLowerCase();
-
-        if (type.includes("breakfast")) {
-            mealPrice = 10.00;
-        } else if (type.includes("lunch")) {
-            mealPrice = 15.00;
-        } else if (type.includes("dinner")) {
-            mealPrice = 20.00;
-        } else {
-            mealPrice = 0.00; // Default case if unmatched
-        }
+        if (this.#mealType === "Breakfast") mealPrice = 10.00;
+        else if (this.#mealType === "Lunch") mealPrice = 15.00;
+        else if (this.#mealType === "Dinner") mealPrice = 20.00;
 
         return this.#quantity * mealPrice;
     }
 
-    //Create a method named getSummary()
-    getSummary() {
-        return `Booking Summary:
-- Student: ${this.#studentName} (${this.#studentId})
-- Meal: ${this.#mealType} on ${this.#mealDate}
-- Quantity: ${this.#quantity}
-- Dietary Note: ${this.#dietaryNote || "None"}
-- Status: ${this.#bookingStatus}
-- Total Cost: K${this.calculateTotal().toFixed(2)}`;
+    // Receipt display
+    getReceipt() {
+        return `
+========================================
+             BOOKING RECEIPT            
+========================================
+Student Name : ${this.#studentName}
+Student ID   : ${this.#studentId}
+Meal Date    : ${this.#mealDate}
+Meal Type    : ${this.#mealType}
+Quantity     : ${this.#quantity}
+Dietary Note : ${this.#dietaryNote}
+Status       : ${this.#bookingStatus}
+----------------------------------------
+Total Cost   : K${this.calculateTotal().toFixed(2)}
+========================================`;
     }
 }
 
