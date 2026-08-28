@@ -30,4 +30,54 @@ Data Persistence & Reporting (Distinction Milestone): Utilize polymorphism, abst
 Documentation & Version Control: Maintain sustained version control tracking via GitHub and document system design and setup in README.md.
 
 ## SCOPE
+### 1. Core Application & Base Features (Pass Level)
+
++ User & Request Modelling
+Object-oriented User and base ServiceRequest classes with data encapsulation and input validation.
+
++ In-Memory Management
+ServiceRequestManager class to store, manage and query requests in an array collection.
+
++ Interactive Terminal CLI
+A terminal-based menu loop allowing users to create, search, update and cancel requests.
+
+### 2. Domain Hierarchy & Role Workflows (Credit Level)
+
++ Inheritance & Subclasses
+Concrete specialized classes (ICTSupportRequest, MaintenanceRequest, CleaningRequest...etc) extending the base request class.
+
++ Role-Based Access Control (RBAC)
+Permission checks for Student/Staff (Requesters), Technicians and Admins.
+
++ Workflow Management
+Controlled status state transitions, technician assignement workflows and history tracking.
+
+### 3. Advanced Architecture, Persistence & Testing (Distinction level)
+
++ Abstraction & Polymorphism
+Abstract-style base class forcusing subclasses to override methods (calculatePriorityScore(), getTargetResolutionHours(), getRequestSummary() ).
+
++ JSON File Repositories
+Asynchronous file persistence using Nodejs fs/promises across 4 JSON storage files (uers.json, serviceRequests.json, requestHistory.json, auditing.json) separated via Repository pattern classes.
+
++ Object Hydration
+ServiceRequestFactory to reconnect fully typed, active object instances from loaded plain JSON data.
+
++ Auditing & Reporting
+Automated event logging engine and a management reporting module delivering key metrics via JavaScript array methods (filter, map, reudce, sort)
+
++ Automated Testing
+Test suit (>=10 tests) using native Node.js test runner for constructor validation, permission, polymorphism, file storage and reporting logic.
+
+## ❌ OUT OF SCOPE
+
++ External Database
+SQL (MySQL, PostgreSQL, SQLite) or NoSQL (MongoDB/Mongoose) databases.
+
++ Graphical User Interface
+Web frontends (HTML/CSS, React) or desktop GUI frameworks.
+
++ Third-Party Libraries
+External ORMs or third-party testing libraries.
+
 ## STRUCTURE
