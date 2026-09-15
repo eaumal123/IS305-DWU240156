@@ -8,6 +8,7 @@
 const readline = require("readline/promises");
 const { stdin: input, stdout: output } = require("process");
 const MealBooking = require("./MealBooking");
+const Student = require("./Student"); // Added Student import
 
 console.log("--- Welcome to DWU Dining Services ---\n");
 
@@ -30,36 +31,45 @@ async function runDiningApp() {
     const rl = readline.createInterface({ input, output });
 
     try {
-        // Step 1: Prompt user inputs
+        // Step 1: Prompt user inputs for Student details.
         const studentId = await rl.question("Enter Student ID: ");
-        const studentName = await rl.question("Enter Student Name: ");
-        const mealDate = await rl.question("Enter Meal Date (e.g. 2026-07-21): ");
-        const mealType = await rl.question("Enter Meal Type (Breakfast, Lunch, Dinner): ");
-        const quantity = await rl.question("Enter Quantity: ");
-        const dietaryNote = await rl.question("Enter Dietary Note (optional): ");
+        const firstName = await rl.question("Enter First Name: ");
+        const lastName = await rl.question("Enter Last Name: ");
 
-        // Step 2: Prevent duplicate booking check
-        if (isDuplicateBooking(studentId, mealDate, mealType)) {
-            throw new Error("Duplicate booking detected! A booking with this Student ID, Date, and Meal Type already exists.");
+       
+        // Step 2: Create a Student object and display its info.
+       const student = new Student(studentId, firstName, lastName);
+       student.displayInfo(); 
+
+
+        // Step 3: Prompt user inputs for Meal details.
+        const mealDate = await rl.question("Enter Meal Date (e.g. 2026-07-12");
+        const mealType = await rl.question("Enter Meal Type (Breakfast, Lunch, Dinner");
+        const quantity = await rl.question("Enter Quantity: ");
+        const dietaryNote = await rl.question("Enter Dietary Note (Optional)");
+
+        // Step 4: Prevent duplicate booking check.
+        if (isDuplicateBooking(studentId, mealDate, mealType)){
+            throw new Error("Duplicate booking detected! A booking with this Student ID, Date and Meal Type already exists.");            
         }
 
-        // Step 3: Instantiate MealBooking object (runs validations)
+        // Step 5: Instantiate MealBooking object (runs validation)
         const studentBooking = new MealBooking(
             studentId,
-            studentName,
+            student.getFullName(),
             mealDate,
             mealType,
             quantity,
             dietaryNote
         );
 
-        // Step 4: Store in the array
+        // Step 6: Store in the array.
         bookings.push(studentBooking);
 
-        // Step 5: Display clear receipt
+        // Step 7: Display clear receipt
         console.log(studentBooking.getReceipt());
 
-        // Step 6: Controlled method updates demonstration
+        // Step 8: Controlled method updates demonstration.
         console.log("\n--------------------------------------");
         console.log("Processing status update...");
         studentBooking.confirmBooking(); 
