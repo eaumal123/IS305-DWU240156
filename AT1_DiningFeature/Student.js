@@ -68,7 +68,8 @@ Student Name: ${this.getFullName()}
 ===========================`;
 
         console.log(output);
-        return output;
-   }
-   
+        return output;  
+    }
 }
+
+    module.exports = Student;
