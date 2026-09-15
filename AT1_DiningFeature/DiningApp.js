@@ -43,8 +43,8 @@ async function runDiningApp() {
 
 
         // Step 3: Prompt user inputs for Meal details.
-        const mealDate = await rl.question("Enter Meal Date (e.g. 2026-07-12)");
-        const mealType = await rl.question("Enter Meal Type (Breakfast, Lunch, Dinner)");
+        const mealDate = await rl.question("Enter Meal Date (e.g. 2026-07-12): ");
+        const mealType = await rl.question("Enter Meal Type (Breakfast, Lunch, Dinner): ");
         const quantity = await rl.question("Enter Quantity: ");
         const dietaryNote = await rl.question("Enter Dietary Note (Optional): ");
 
