@@ -51,4 +51,24 @@ class Student {
         }
         this.#lastName = lastName;
     }
+
+    // Method 1: Combine First & Last Name
+    getFullName(){
+        return '${this.#firstName} ${this.#lastName}'; 
+    }
+
+    // Method 2: Display Information(output)
+    displayInfo(){
+        const output =
+`===========================
+STUDENT DETAILS
+===========================
+Student ID: ${this.studentId}
+Student Name: ${this.getFullName()}
+===========================`;
+
+        console.log(output);
+        return output;
+   }
+   
 }
