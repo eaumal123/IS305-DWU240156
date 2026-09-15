@@ -56,7 +56,7 @@ class Student {
 
     // Method 1: Combine First & Last Name
     getFullName(){
-        return '${this.#firstName} ${this.#lastName}'; 
+        return `${this.#firstName} ${this.#lastName}`; 
     }
 
     // Method 2: Display Information(output)
