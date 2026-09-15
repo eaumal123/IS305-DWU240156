@@ -16,4 +16,39 @@ class Student {
         this.#lastName = lastName;
     }
 
+    // --- Student ID ---
+    get studentId(){
+        return this.#studentId;
+    }
+  
+    set studentId(studentId){
+        if (!studentId || studentId.trim() === ''){
+            throw new Error('Student ID cannot be empty.');
+        }
+        this.#studentId = studentId;
+    }
+
+    // --- FirstName ---
+    get firstName(){
+        return this.#firstName;
+    }
+
+    set firstName(firstName){
+        if(!firstName || firstName.Trim() === ''){
+            throw new Error('First name cannot be empty.');
+        }
+        this.#firstName = firstName;
+    }
+
+    // --- LastName ---
+    get lastName(){
+        return this.#lastName = lastName;
+    }
+
+    set lastName(lastName){
+        if(!lastName || lastName.Trim() === ''){
+            throw new Error('Last name cannot be empty.');
+        }
+        this.#lastName = lastName;
+    }
 }
