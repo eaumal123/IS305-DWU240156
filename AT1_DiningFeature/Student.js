@@ -5,17 +5,19 @@
   Date: 15th September 2026
 */
 
+// --- Class Declaration ---
 class Student {
     #studentId;
     #firstName;
     #lastName;
 
+// --- Constructor Implementation ---    
     constructor(studentId, firstName, lastName){
         this.#studentId = studentId;
         this.#firstName = firstName;
         this.#lastName = lastName;
     }
-
+    // --- GETTERS & SETTERS ---
     // --- Student ID ---
     get studentId(){
         return this.#studentId;
