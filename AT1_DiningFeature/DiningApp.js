@@ -44,5 +44,18 @@ async function runDiningApp() {
         if (isDuplicateBooking(studentId, mealDate, mealType)) {
             throw new Error("Duplicate booking detected! A booking with this Student ID, Date, and Meal Type already exists.");            
         }
+
+        // Step 4: Instantiate MealBooking object (runs class constructor validation)
+        const studentBooking = new MealBooking(
+            studentId,
+            studentName,
+            mealDate,
+            mealType,
+            quantity,
+            dietaryNote
+        );
+
+        // Step 5: Store in the bookings array
+        bookings.push(studentBooking);
     }
 }
