@@ -26,69 +26,69 @@ The application is executed in the terminal of the Visual Studio Code. When atte
 ## Test 1 - Valid Student Creation
 --- Welcome to DWU Dining Services ---
 
---- Enter Student ID: S123 ---
---- Enter First Name: John ---
---- Enter Last Name: Doe ---
+Enter Student ID: S123
+Enter First Name: John
+Enter Last Name: Doe
 ===========================
---- STUDENT DETAILS ---
+     STUDENT DETAILS 
 ===========================
---- Student ID: S123 ---
---- Student Name: John Doe ---
+Student ID: S123
+Student Name: John Doe
 ===========================
 
 ## Test 2 - Required Student Input
 --- Welcome to DWU Dining Services ---
 
---- Enter Student ID: S123 ---
---- Enter First Name: --- 
---- Enter Last Name: --- 
+Enter Student ID: S123
+Enter First Name: 
+Enter Last Name: 
 ===========================
---- STUDENT DETAILS ---
+      STUDENT DETAILS
 ===========================
---- Student ID: S123 ---
---- Student Name: ---  
+Student ID: S123
+Student Name:  
 ===========================
---- Enter Meal Date (e.g. 2026-07-12): 2026-09-15 ---
---- Enter Meal Type (Breakfast, Lunch, Dinner): Dinner ---
---- Enter Quantity: 2 ---
---- Enter Dietary Note (Optional): Extra protein ---
+Enter Meal Date (e.g. 2026-07-12): 2026-09-15
+Enter Meal Type (Breakfast, Lunch, Dinner): Dinner
+Enter Quantity: 2
+Enter Dietary Note (Optional): Extra protein
 
---- [ERROR] Student Name is required. ---
+[ERROR] Student Name is required.
 
 ## Test 3 - Student and MealBooking Object Linked.
 --- Welcome to DWU Dining Services ---
 
---- Enter Student ID: S123 ---
---- Enter First Name: John ---
---- Enter Last Name: Doe ---
+Enter Student ID: S123
+Enter First Name: John
+Enter Last Name: Doe
 ===========================
---- STUDENT DETAILS ---
+     STUDENT DETAILS
 ===========================
---- Student ID: S123 ---
---- Student Name: John Doe ---
+Student ID: S123
+Student Name: John Doe
 ===========================
---- Enter Meal Date (e.g. 2026-07-12): 2026-09-15 ---
---- Enter Meal Type (Breakfast, Lunch, Dinner): Dinner ---
---- Enter Quantity: 2 ---
---- Enter Dietary Note (Optional): Extra protein ---
+Enter Meal Date (e.g. 2026-07-12): 2026-09-15
+Enter Meal Type (Breakfast, Lunch, Dinner): Dinner
+Enter Quantity: 2
+Enter Dietary Note (Optional): Extra protein
 
 ========================================
              BOOKING RECEIPT            
 ========================================
---- Student Name : John Doe ---
---- Student ID   : S123 ---
---- Meal Date    : 2026-09-15 ---
---- Meal Type    : Dinner ---
---- Quantity     : 2 --- 
---- Dietary Note : Extra protein ---
---- Status       : Pending ---
+Student Name : John Doe
+Student ID   : S123
+Meal Date    : 2026-09-15
+Meal Type    : Dinner
+Quantity     : 2
+Dietary Note : Extra protein
+Status       : Pending
 ----------------------------------------
---- Total Cost   : K40.00 ---
+Total Cost   : K40.00
 ========================================
 
 --------------------------------------
---- Processing status update... ---
---- Updated Status: Confirmed ---
+Processing status update...
+Updated Status: Confirmed
 
 # AI Tools
 The lab was done with the assitance of AI, to create and debug the codes.
