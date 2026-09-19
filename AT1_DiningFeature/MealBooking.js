@@ -49,3 +49,23 @@ export class MealBooking {
         const clean = type.trim().toLowerCase();
         return clean.charAt(0).toUpperCase() + clean.slice(1);
     }
+
+    // Getters
+    get studentId() { return this.#studentId; }
+    get studentName() { return this.#studentName; }
+    get mealDate() { return this.#mealDate; }
+    get mealType() { return this.#mealType; }
+    get quantity() { return this.#quantity; }
+    get dietaryNote() { return this.#dietaryNote; }
+    get bookingStatus() { return this.#bookingStatus; }
+
+    // Setters
+    set studentId(value) { this.#studentId = value; }
+    set studentName(value) { this.#studentName = value; }
+    set mealDate(value) { this.#mealDate = value; }
+    set mealType(value) { this.#mealType = MealBooking.formatMealType(value); }
+    set quantity(value) { this.#quantity = Number(value); }
+    set dietaryNote(value) { this.#dietaryNote = value; }
+    set bookingStatus(value) { this.#bookingStatus = value; }
+
+    
