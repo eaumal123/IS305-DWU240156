@@ -67,4 +67,14 @@ async function runDiningApp() {
         studentBooking.confirmBooking(); 
         console.log(`Updated Booking Status: ${studentBooking.bookingStatus}`);
     }
+
+    catch (error) {
+        // Display clear error message without crashing application
+        console.error(`\n[ERROR] ${error.message}`);
+    } finally {
+        rl.close();
+    }
 }
+
+// Execute application
+runDiningApp();
