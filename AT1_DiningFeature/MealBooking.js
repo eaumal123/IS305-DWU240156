@@ -68,4 +68,13 @@ export class MealBooking {
     set dietaryNote(value) { this.#dietaryNote = value; }
     set bookingStatus(value) { this.#bookingStatus = value; }
 
+    // Controlled Status Methods
+    confirmBooking() {
+        this.#bookingStatus = "Confirmed";
+    }
+
+    cancelBooking() {
+        this.#bookingStatus = "Cancelled";
+    }
+
     
