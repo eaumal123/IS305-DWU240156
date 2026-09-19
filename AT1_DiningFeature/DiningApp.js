@@ -57,5 +57,14 @@ async function runDiningApp() {
 
         // Step 5: Store in the bookings array
         bookings.push(studentBooking);
+
+        // Step 6: Display booking summary
+        console.log(studentBooking.getSummary());
+
+        // Step 7: Demonstrate controlled status update
+        console.log("\n--------------------------------------");
+        console.log("Processing status update...");
+        studentBooking.confirmBooking(); 
+        console.log(`Updated Booking Status: ${studentBooking.bookingStatus}`);
     }
 }
