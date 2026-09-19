@@ -13,3 +13,16 @@ console.log("--- Welcome to DWU Dining Services ---\n");
 
 // Array to store created MealBooking objects
 const bookings = [];
+
+/**
+ * Checks if a booking already exists for the same student ID, meal date, and meal type.
+ */
+function isDuplicateBooking(studentId, mealDate, mealType) {
+    const formattedType = MealBooking.formatMealType ? MealBooking.formatMealType(mealType) : mealType.trim();
+    return bookings.some(b => 
+        b.studentId.toLowerCase() === studentId.trim().toLowerCase() &&
+        b.mealDate.trim().toLowerCase() === mealDate.trim().toLowerCase() &&
+        b.mealType.toLowerCase() === formattedType.toLowerCase()
+    );
+}
+
