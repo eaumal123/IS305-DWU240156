@@ -77,4 +77,14 @@ export class MealBooking {
         this.#bookingStatus = "Cancelled";
     }
 
+    // Calculate Total Cost (meal price x quantity)
+    calculateTotal() {
+        let mealPrice = 0.00;
+        if (this.#mealType === "Breakfast") mealPrice = 10.00;
+        else if (this.#mealType === "Lunch") mealPrice = 15.00;
+        else if (this.#mealType === "Dinner") mealPrice = 20.00;
+
+        return this.#quantity * mealPrice;
+    }
+
     
