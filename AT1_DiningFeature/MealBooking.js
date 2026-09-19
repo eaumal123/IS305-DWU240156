@@ -7,7 +7,7 @@
   objects, constructors, private fields and methods.
 */
 
-class MealBooking {
+export class MealBooking {
     #studentId;
     #studentName;
     #mealDate;
@@ -49,52 +49,3 @@ class MealBooking {
         const clean = type.trim().toLowerCase();
         return clean.charAt(0).toUpperCase() + clean.slice(1);
     }
-
-    // Getters
-    get studentId() { return this.#studentId; }
-    get studentName() { return this.#studentName; }
-    get mealDate() { return this.#mealDate; }
-    get mealType() { return this.#mealType; }
-    get quantity() { return this.#quantity; }
-    get dietaryNote() { return this.#dietaryNote; }
-    get bookingStatus() { return this.#bookingStatus; }
-
-    // Controlled Status Methods
-    confirmBooking() {
-        this.#bookingStatus = "Confirmed";
-    }
-
-    cancelBooking() {
-        this.#bookingStatus = "Cancelled";
-    }
-
-    // Calculate Total Cost (meal price x quantity)
-    calculateTotal() {
-        let mealPrice = 0.00;
-        if (this.#mealType === "Breakfast") mealPrice = 10.00;
-        else if (this.#mealType === "Lunch") mealPrice = 15.00;
-        else if (this.#mealType === "Dinner") mealPrice = 20.00;
-
-        return this.#quantity * mealPrice;
-    }
-
-    // Receipt display
-    getReceipt() {
-        return `
-========================================
-             BOOKING RECEIPT            
-========================================
-Student Name : ${this.#studentName}
-Student ID   : ${this.#studentId}
-Meal Date    : ${this.#mealDate}
-Meal Type    : ${this.#mealType}
-Quantity     : ${this.#quantity}
-Dietary Note : ${this.#dietaryNote}
-Status       : ${this.#bookingStatus}
-----------------------------------------
-Total Cost   : K${this.calculateTotal().toFixed(2)}
-========================================`;
-    }
-}
-
-module.exports = MealBooking;
