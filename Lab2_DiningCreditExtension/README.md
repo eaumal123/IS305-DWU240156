@@ -24,6 +24,7 @@ The application is executed in the terminal of the Visual Studio Code. When atte
 
 # Testing
 ## Test 1 - Valid Student Creation
+```
 --- Welcome to DWU Dining Services ---
 
 Enter Student ID: S123
@@ -35,8 +36,10 @@ Enter Last Name: Doe
 Student ID: S123
 Student Name: John Doe
 ===========================
+```
 
 ## Test 2 - Required Student Input
+```
 --- Welcome to DWU Dining Services ---
 
 Enter Student ID: S123
@@ -54,9 +57,10 @@ Enter Quantity: 2
 Enter Dietary Note (Optional): Extra protein
 
 [ERROR] Student Name is required.
+```
 
 ## Test 3 - Student and MealBooking Object Linked.
---- Welcome to DWU Dining Services ---
+```--- Welcome to DWU Dining Services ---
 
 Enter Student ID: S123
 Enter First Name: John
@@ -89,6 +93,7 @@ Total Cost   : K40.00
 --------------------------------------
 Processing status update...
 Updated Status: Confirmed
+```
 
 # AI Tools
 The lab was done with the assitance of AI, to create and debug the codes.
