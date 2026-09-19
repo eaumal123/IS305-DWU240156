@@ -87,4 +87,21 @@ export class MealBooking {
         return this.#quantity * mealPrice;
     }
 
-    
+    // Summary method required by assignment
+    getSummary() {
+        return `
+========================================
+             BOOKING SUMMARY            
+========================================
+Student Name : ${this.#studentName}
+Student ID   : ${this.#studentId}
+Meal Date    : ${this.#mealDate}
+Meal Type    : ${this.#mealType}
+Quantity     : ${this.#quantity}
+Dietary Note : ${this.#dietaryNote}
+Status       : ${this.#bookingStatus}
+----------------------------------------
+Total Cost   : K${this.calculateTotal().toFixed(2)}
+========================================`;
+    }
+}
