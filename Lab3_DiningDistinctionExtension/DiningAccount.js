@@ -10,4 +10,26 @@ class DiningAccount{
     #accountNumber;
     #balance;
     #transactions;
+
+    // 2. Constructor with optional opening balance
+    constructor(accountNumber, openingBalance = 0) {
+        if (!accountNumber || accountNumber.trim() === "") {
+            throw new Error("Account number cannot be empty.");
+        }
+        if (openingBalance < 0) {
+            throw new Error("Opening balance cannot be negative.");
+        }
+
+        this.#accountNumber = accountNumber;
+        this.#balance = openingBalance;
+        this.#transactions = [];
+
+        if (openingBalance > 0) {
+            this.#transactions.push({
+                type: "Deposit",
+                amount: openingBalance,
+                description: "Opening Balance"
+            });
+        }
+    }
 }
