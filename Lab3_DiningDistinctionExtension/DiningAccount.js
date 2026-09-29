@@ -47,6 +47,28 @@ class DiningAccount{
             description: description
         });
     }
+
+    // 4. Pay for meal with sufficient funds check
+    payForMeal(amount, description = "Meal Payment") {
+        if (amount <= 0) {
+            console.log("Meal payment amount must be greater than zero.");
+            return false;
+        }
+
+        if (this.#balance - amount < 0) {
+            console.log("Payment rejected: Insufficient funds.");
+            return false;
+        }
+
+        this.#balance -= amount;
+        this.#transactions.push({
+            type: "Payment",
+            amount: amount,
+            description: description
+        });
+        console.log("Payment successful.");
+        return true;
+    }
 }
 
      
