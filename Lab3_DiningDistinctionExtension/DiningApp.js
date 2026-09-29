@@ -5,83 +5,48 @@
   Date: 20 July 2026
 */
 
-const readline = require("readline/promises");
-const { stdin: input, stdout: output } = require("process");
-const MealBooking = require("./MealBooking");
-const Student = require("./Student"); // Added Student import
+const DiningAccount = require('./DiningAccount');
+const RewardsDiningAccount = require('./RewardsDiningAccount');
 
-console.log("--- Welcome to DWU Dining Services ---\n");
+console.log("========================================");
+console.log("       STANDARD DINING ACCOUNT          ");
+console.log("========================================");
 
-// Array to store created MealBooking objects
-const bookings = [];
+// 1. Create a DiningAccount with opening balance K1,000.00
+const standardAccount = new DiningAccount("DA001", 1000);
+console.log("Account Number: DA001");
+console.log("Opening Balance: K1000.00");
 
-/**
- * Checks if a booking already exists for the same student ID, meal date, and meal type.
- */
-function isDuplicateBooking(studentId, mealDate, mealType) {
-    const formattedType = MealBooking.formatMealType ? MealBooking.formatMealType(mealType) : mealType.trim();
-    return bookings.some(b => 
-        b.studentId.toLowerCase() === studentId.trim().toLowerCase() &&
-        b.mealDate.trim().toLowerCase() === mealDate.trim().toLowerCase() &&
-        b.mealType.toLowerCase() === formattedType.toLowerCase()
-    );
-}
+// 2. Deposit K500.00
+standardAccount.deposit(500, "Weekly meal allowance");
+console.log("Deposit: K500.00");
 
-async function runDiningApp() {
-    const rl = readline.createInterface({ input, output });
+// 3. Pay K200.00 for a meal
+console.log("Meal Payment: K200.00");
+process.stdout.write("Payment Status: ");
+standardAccount.payForMeal(200, "Dinner payment");
 
-    try {
-        // Step 1: Prompt user inputs for Student details.
-        const studentId = await rl.question("Enter Student ID: ");
-        const firstName = await rl.question("Enter First Name: ");
-        const lastName = await rl.question("Enter Last Name: ");
+// 4. Display final balance
+console.log(`Final Balance: K${standardAccount.getBalance().toFixed(2)}`);
 
-       
-        // Step 2: Create a Student object and display its info.
-       const student = new Student(studentId, firstName, lastName);
-       student.displayInfo(); 
+console.log("\n========================================");
+console.log("        REWARDS DINING ACCOUNT          ");
+console.log("========================================");
 
+// 5. Create RewardsDiningAccount (Opening balance K1,500.00, 2.5% rate)
+const rewardsAccount = new RewardsDiningAccount("RA001", 1500, 2.5);
+console.log("Account Number: RA001");
 
-        // Step 3: Prompt user inputs for Meal details.
-        const mealDate = await rl.question("Enter Meal Date (e.g. 2026-07-12): ");
-        const mealType = await rl.question("Enter Meal Type (Breakfast, Lunch, Dinner): ");
-        const quantity = await rl.question("Enter Quantity: ");
-        const dietaryNote = await rl.question("Enter Dietary Note (Optional): ");
+// Deposit K500.00
+rewardsAccount.deposit(500);
+console.log(`Balance Before Reward: K${rewardsAccount.getBalance().toFixed(2)}`);
+console.log("Reward Rate: 2.5%");
 
-        // Step 4: Prevent duplicate booking check.
-        if (isDuplicateBooking(studentId, mealDate, mealType)){
-            throw new Error("Duplicate booking detected! A booking with this Student ID, Date and Meal Type already exists.");            
-        }
+// Calculate and apply reward
+const rewardEarned = rewardsAccount.calculateReward();
+console.log(`Reward Earned: K${rewardEarned.toFixed(2)}`);
+rewardsAccount.applyReward();
 
-        // Step 5: Instantiate MealBooking object (runs validation)
-        const studentBooking = new MealBooking(
-            studentId,
-            student.getFullName(),
-            mealDate,
-            mealType,
-            quantity,
-            dietaryNote
-        );
-
-        // Step 6: Store in the array.
-        bookings.push(studentBooking);
-
-        // Step 7: Display clear receipt
-        console.log(studentBooking.getReceipt());
-
-        // Step 8: Controlled method updates demonstration.
-        console.log("\n--------------------------------------");
-        console.log("Processing status update...");
-        studentBooking.confirmBooking(); 
-        console.log(`Updated Status: ${studentBooking.bookingStatus}`);
-
-    } catch (error) {
-        // Display clear error message without crashing
-        console.error(`\n[ERROR] ${error.message}`);
-    } finally {
-        rl.close();
-    }
-}
-
-// Run the application
-runDiningApp();
+// Display final balance
+console.log(`Final Balance: K${rewardsAccount.getBalance().toFixed(2)}`);
+console.log("========================================");
