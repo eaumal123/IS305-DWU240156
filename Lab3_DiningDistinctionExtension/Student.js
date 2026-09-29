@@ -56,15 +56,19 @@ class Student {
     }
 
     // --- LastName ---
-    get lastName(){
-        return this.#lastName = lastName;
+    get lastName() {
+        return this.#lastName;
     }
 
-    set lastName(lastName){
-        if(!lastName || lastName.Trim() === ''){
+    set lastName(lastName) {
+        if (!lastName || lastName.trim() === '') {
             throw new Error('Last name cannot be empty.');
         }
         this.#lastName = lastName;
+    }
+
+    getName() {
+        return this.getFullName();
     }
 
     // Method 1: Combine First & Last Name
