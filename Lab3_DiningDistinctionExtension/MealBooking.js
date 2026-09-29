@@ -87,10 +87,12 @@ class MealBooking {
             console.log("Error: This booking has already been paid for.");
             return false;
         }
+    
 
     // Polymorphic call to payForMeal() regardless of account subtype
         const paymentSuccessful = diningAccount.payForMeal(totalCost, `${this.#mealType} booking`); 
-
+    }
+    
     // Receipt display
     getReceipt() {
         return `
