@@ -16,4 +16,18 @@ class RewardsDiningAccount extends DiningAccount {
         super(accountNumber, openingBalance);
         this.#rewardRate = rewardRate;
     }
+
+    // 3. Calculate reward formula: balance * rate / 100
+    calculateReward() {
+        return (this.getBalance() * this.#rewardRate) / 100;
+    }
+
+    // 4. Apply reward and deposit it into the account balance
+    applyReward() {
+        const rewardAmount = this.calculateReward();
+        if (rewardAmount > 0) {
+            this.deposit(rewardAmount, "Reward Earned");
+        }
+        return rewardAmount;
+    }
 }
