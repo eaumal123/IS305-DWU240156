@@ -87,5 +87,6 @@ class DiningAccount{
     }
 }
 
+module.exports = DiningAccount;
 
      
