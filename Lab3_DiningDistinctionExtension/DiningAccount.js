@@ -79,6 +79,13 @@ class DiningAccount{
         // Return a copy of the array to maintain encapsulation
         return [...this.#transactions];
     }
+
+    // 6. Display Summary
+    displayAccountSummary() {
+        console.log(`Account Number: ${this.#accountNumber}`);
+        console.log(`Balance: K${this.#balance.toFixed(2)}`);
+    }
 }
+
 
      
