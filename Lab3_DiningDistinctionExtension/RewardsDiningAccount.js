@@ -31,3 +31,5 @@ class RewardsDiningAccount extends DiningAccount {
         return rewardAmount;
     }
 }
+
+module.exports = RewardsDiningAccount;
