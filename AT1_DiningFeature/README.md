@@ -26,12 +26,52 @@ File Name & Purpose
 
 ## How to Run the Program
 
-### Prerequisites
-Ensure you have **Node.js** installed on your machine. You can verify this by running `node -v` in your terminal.
-
 ### Execution Steps
 1. Open your terminal or command prompt (or use the built-in terminal in VS Code: `Ctrl + \``).
 2. Navigate to the directory containing your project files:
    ``bash
    cd <directory_name>
 3. Run the command `node DiningApp.js`. 
+
+## Demonstration
+### Test 1 - Valid Booking Creation.
+```
+Enter Student ID: DWU240156
+Enter Full Name: Mary Thomas
+Enter Meal Date (e.g. 2026-07-20): 2026-07-09
+Enter Meal Type (Breakfast, Lunch, Dinner): Dinner
+Enter Quantity: 2
+Enter Dietary Note (Optional): Extra protein
+
+========================================
+             BOOKING SUMMARY            
+========================================
+Student Name : Mary Thomas
+Student ID   : DWU240156
+Meal Date    : 2026-07-09
+Meal Type    : Dinner
+Quantity     : 2
+Dietary Note : Extra protein
+Status       : Pending
+----------------------------------------
+Total Cost   : K40.00
+========================================
+
+--------------------------------------
+Processing status update...
+Updated Booking Status: Confirmed
+```
+### Test 2 - Invalid Booking Check
+```
+--- Welcome to DWU Dining Services ---
+
+Enter Student ID: DWU231056
+Enter Full Name: Samuel Paul
+Enter Meal Date (e.g. 2026-07-20): 2026-09-23
+Enter Meal Type (Breakfast, Lunch, Dinner): Special lunch
+Enter Quantity: 1
+Enter Dietary Note (Optional): No veggies
+
+[ERROR] Invalid meal type. Allowed types are: Breakfast, Lunch, or Dinner.
+```
+### Test 3 - 
