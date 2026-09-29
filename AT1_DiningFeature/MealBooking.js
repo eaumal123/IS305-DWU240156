@@ -51,13 +51,27 @@ export class MealBooking {
     }
 
     // Getters
-    get studentId() { return this.#studentId; }
-    get studentName() { return this.#studentName; }
-    get mealDate() { return this.#mealDate; }
-    get mealType() { return this.#mealType; }
-    get quantity() { return this.#quantity; }
-    get dietaryNote() { return this.#dietaryNote; }
-    get bookingStatus() { return this.#bookingStatus; }
+    get studentId() { 
+        return this.#studentId; 
+    }
+    get studentName() { 
+        return this.#studentName; 
+    }
+    get mealDate() { 
+        return this.#mealDate; 
+    }
+    get mealType() { 
+        return this.#mealType; 
+    }
+    get quantity() { 
+        return this.#quantity; 
+    }
+    get dietaryNote() { 
+        return this.#dietaryNote; 
+    }
+    get bookingStatus() { 
+        return this.#bookingStatus; 
+    }
 
     // Setters
     set studentId(value) { this.#studentId = value; }
