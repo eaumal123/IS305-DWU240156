@@ -15,6 +15,7 @@ class MealBooking {
     #quantity;
     #dietaryNote;
     #bookingStatus;
+    #isPaid;
 
     constructor(studentId, studentName, mealDate, mealType, quantity, dietaryNote = "") {
         // Validation for missing required values
@@ -41,6 +42,7 @@ class MealBooking {
         this.#quantity = numQuantity;
         this.#dietaryNote = dietaryNote.trim() || "None";
         this.#bookingStatus = "Pending";
+        this.#isPaid = false;
     }
 
     // Helper method to standardize meal type formatting
@@ -77,6 +79,17 @@ class MealBooking {
 
         return this.#quantity * mealPrice;
     }
+
+    // Polymorphic payment method
+    processPayment(diningAccount) {
+        // Prevent double payment
+        if (this.#isPaid) {
+            console.log("Error: This booking has already been paid for.");
+            return false;
+        }
+
+    // Polymorphic call to payForMeal() regardless of account subtype
+        const paymentSuccessful = diningAccount.payForMeal(totalCost, `${this.#mealType} booking`); 
 
     // Receipt display
     getReceipt() {
