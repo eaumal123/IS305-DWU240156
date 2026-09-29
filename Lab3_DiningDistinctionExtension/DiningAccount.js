@@ -32,4 +32,21 @@ class DiningAccount{
             });
         }
     }
+
+    // 3. Deposit method supporting 1 or 2 parameters
+    deposit(amount, description = "Standard Deposit") {
+        if (amount <= 0) {
+            console.log("Deposit amount must be greater than zero.");
+            return;
+        }
+
+        this.#balance += amount;
+        this.#transactions.push({
+            type: "Deposit",
+            amount: amount,
+            description: description
+        });
+    }
 }
+
+     
