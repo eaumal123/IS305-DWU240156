@@ -10,13 +10,24 @@ class Student {
     #studentId;
     #firstName;
     #lastName;
+    #diningAccount;
 
 // --- Constructor Implementation ---    
     constructor(studentId, firstName, lastName){
         this.#studentId = studentId;
         this.#firstName = firstName;
         this.#lastName = lastName;
+        this.#diningAccount = null;
     }
+
+    // Assign account with type validation
+    assignDiningAccount(account) {
+        if (!(account instanceof DiningAccount)) {
+            throw new Error("Invalid account: Must be an instance of DiningAccount or its subclasses.");
+        }
+        this.#diningAccount = account;
+    }
+
     // --- GETTERS & SETTERS ---
     // --- Student ID ---
     get studentId(){
@@ -57,6 +68,11 @@ class Student {
     // Method 1: Combine First & Last Name
     getFullName(){
         return `${this.#firstName} ${this.#lastName}`; 
+    }
+
+    // Method 2: Return Dining Account.
+    getDiningAccount(){
+        return this.#diningAccount;
     }
 
     // Method 2: Display Information(output)
