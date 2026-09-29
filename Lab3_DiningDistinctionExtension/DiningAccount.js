@@ -69,6 +69,16 @@ class DiningAccount{
         console.log("Payment successful.");
         return true;
     }
+
+    // 5. Getter methods
+    getBalance() {
+        return this.#balance;
+    }
+
+    getTransactions() {
+        // Return a copy of the array to maintain encapsulation
+        return [...this.#transactions];
+    }
 }
 
      
