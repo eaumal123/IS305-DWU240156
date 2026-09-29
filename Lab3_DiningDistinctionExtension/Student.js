@@ -5,6 +5,8 @@
   Date: 15th September 2026
 */
 
+const DiningAccount = require('./DiningAccount');
+
 // --- Class Declaration ---
 class Student {
     #studentId;
