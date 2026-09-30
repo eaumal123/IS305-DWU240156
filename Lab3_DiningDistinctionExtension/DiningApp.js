@@ -45,8 +45,7 @@ console.log("\n========================================");
 console.log("             MEAL BOOKING               ");
 console.log("========================================");
 
-// Replace line 48 in DiningApp.js with:
-const booking = new MealBooking(student.getStudentId(),student.getName(),"2026-09-30","Dinner",5);
+const booking = new MealBooking(student.getStudentId(), student.getName(), "2026-09-30", "Dinner", 2);
 
 const totalCost = booking.calculateTotalCost();
 
