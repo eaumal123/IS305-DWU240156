@@ -35,6 +35,10 @@ class Student {
     get studentId(){
         return this.#studentId;
     }
+
+    getStudentId() {
+    return this.#studentId;
+}
   
     set studentId(studentId){
         if (!studentId || studentId.trim() === ''){
@@ -49,7 +53,7 @@ class Student {
     }
 
     set firstName(firstName){
-        if(!firstName || firstName.Trim() === ''){
+        if(!firstName || firstName.trim() === ''){
             throw new Error('First name cannot be empty.');
         }
         this.#firstName = firstName;
