@@ -7,22 +7,25 @@
 
 const DiningAccount = require('./DiningAccount');
 
-// --- Class Declaration ---
 class Student {
     #studentId;
     #firstName;
     #lastName;
     #diningAccount;
 
-// --- Constructor Implementation ---    
-    constructor(studentId, firstName, lastName){
+    constructor(studentId, firstName, lastName = ""){
         this.#studentId = studentId;
-        this.#firstName = firstName;
-        this.#lastName = lastName;
+        if (!lastName && firstName.includes(" ")) {
+            const parts = firstName.split(" ");
+            this.#firstName = parts[0];
+            this.#lastName = parts.slice(1).join(" ");
+        } else {
+            this.#firstName = firstName;
+            this.#lastName = lastName;
+        }
         this.#diningAccount = null;
     }
 
-    // Assign account with type validation
     assignDiningAccount(account) {
         if (!(account instanceof DiningAccount)) {
             throw new Error("Invalid account: Must be an instance of DiningAccount or its subclasses.");
@@ -30,16 +33,9 @@ class Student {
         this.#diningAccount = account;
     }
 
-    // --- GETTERS & SETTERS ---
-    // --- Student ID ---
-    get studentId(){
-        return this.#studentId;
-    }
+    get studentId(){ return this.#studentId; }
+    getStudentId() { return this.#studentId; }
 
-    getStudentId() {
-    return this.#studentId;
-}
-  
     set studentId(studentId){
         if (!studentId || studentId.trim() === ''){
             throw new Error('Student ID cannot be empty.');
@@ -47,11 +43,7 @@ class Student {
         this.#studentId = studentId;
     }
 
-    // --- FirstName ---
-    get firstName(){
-        return this.#firstName;
-    }
-
+    get firstName(){ return this.#firstName; }
     set firstName(firstName){
         if(!firstName || firstName.trim() === ''){
             throw new Error('First name cannot be empty.');
@@ -59,11 +51,7 @@ class Student {
         this.#firstName = firstName;
     }
 
-    // --- LastName ---
-    get lastName() {
-        return this.#lastName;
-    }
-
+    get lastName() { return this.#lastName; }
     set lastName(lastName) {
         if (!lastName || lastName.trim() === '') {
             throw new Error('Last name cannot be empty.');
@@ -71,21 +59,10 @@ class Student {
         this.#lastName = lastName;
     }
 
-    getName() {
-        return this.getFullName();
-    }
+    getName() { return this.getFullName(); }
+    getFullName(){ return `${this.#firstName} ${this.#lastName}`.trim(); }
+    getDiningAccount(){ return this.#diningAccount; }
 
-    // Method 1: Combine First & Last Name
-    getFullName(){
-        return `${this.#firstName} ${this.#lastName}`; 
-    }
-
-    // Method 2: Return Dining Account.
-    getDiningAccount(){
-        return this.#diningAccount;
-    }
-
-    // Method 2: Display Information(output)
     displayInfo(){
         const output =
 `===========================
@@ -100,4 +77,4 @@ Student Name: ${this.getFullName()}
     }
 }
 
-    module.exports = Student;
+module.exports = Student;
