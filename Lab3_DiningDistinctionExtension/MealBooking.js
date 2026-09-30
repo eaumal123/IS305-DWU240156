@@ -18,18 +18,15 @@ class MealBooking {
     #isPaid;
 
     constructor(studentId, studentName, mealDate, mealType, quantity, dietaryNote = "") {
-        // Validation for missing required values
         if (!studentId || !studentId.trim()) throw new Error("Student ID is required.");
         if (!studentName || !studentName.trim()) throw new Error("Student Name is required.");
         if (!mealDate || !mealDate.trim()) throw new Error("Meal Date is required.");
 
-        // Normalize and validate meal type
         const formattedMealType = MealBooking.formatMealType(mealType);
         if (!["Breakfast", "Lunch", "Dinner"].includes(formattedMealType)) {
             throw new Error("Invalid meal type. Allowed types are: Breakfast, Lunch, or Dinner.");
         }
 
-        // Validate quantity
         const numQuantity = Number(quantity);
         if (isNaN(numQuantity) || numQuantity < 1) {
             throw new Error("Quantity must be a number equal to 1 or greater.");
@@ -45,14 +42,13 @@ class MealBooking {
         this.#isPaid = false;
     }
 
-    // Helper method to standardize meal type formatting
     static formatMealType(type) {
         if (!type || typeof type !== 'string') return "";
         const clean = type.trim().toLowerCase();
         return clean.charAt(0).toUpperCase() + clean.slice(1);
     }
 
-    // Getters
+    // Property Getters
     get studentId() { return this.#studentId; }
     get studentName() { return this.#studentName; }
     get mealDate() { return this.#mealDate; }
@@ -61,7 +57,11 @@ class MealBooking {
     get dietaryNote() { return this.#dietaryNote; }
     get bookingStatus() { return this.#bookingStatus; }
 
-    // Controlled Status Methods
+    // Method Getters for DiningApp compatibility
+    getMealType() { return this.#mealType; }
+    getQuantity() { return this.#quantity; }
+    getStatus() { return this.#bookingStatus; }
+
     confirmBooking() {
         this.#bookingStatus = "Confirmed";
     }
@@ -70,7 +70,6 @@ class MealBooking {
         this.#bookingStatus = "Cancelled";
     }
 
-    // Calculate Total Cost (meal price x quantity)
     calculateTotal() {
         let mealPrice = 0.00;
         if (this.#mealType === "Breakfast") mealPrice = 10.00;
@@ -80,20 +79,29 @@ class MealBooking {
         return this.#quantity * mealPrice;
     }
 
-    // Polymorphic payment method
+    calculateTotalCost() {
+        return this.calculateTotal();
+    }
+
     processPayment(diningAccount) {
-        // Prevent double payment
         if (this.#isPaid) {
             console.log("Error: This booking has already been paid for.");
             return false;
         }
-    
 
-    // Polymorphic call to payForMeal() regardless of account subtype
-        const paymentSuccessful = diningAccount.payForMeal(totalCost, `${this.#mealType} booking`); 
+        const totalCost = this.calculateTotal();
+        const paymentSuccessful = diningAccount.payForMeal(totalCost, `${this.#mealType} booking`);
+
+        if (paymentSuccessful) {
+            this.#isPaid = true;
+            this.#bookingStatus = "Confirmed";
+        } else {
+            this.#bookingStatus = "Pending";
+        }
+
+        return paymentSuccessful;
     }
-    
-    // Receipt display
+
     getReceipt() {
         return `
 ========================================
