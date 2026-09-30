@@ -83,14 +83,14 @@ class MealBooking {
         return this.calculateTotal();
     }
 
-    processPayment(diningAccount) {
+   processPayment(diningAccount) {
         if (this.#isPaid) {
             console.log("Error: This booking has already been paid for.");
             return false;
         }
 
-        const totalCost = this.calculateTotal();
-        const paymentSuccessful = diningAccount.payForMeal(totalCost, `${this.#mealType} booking`);
+        const cost = this.calculateTotalCost();
+        const paymentSuccessful = diningAccount.payForMeal(cost, `${this.#mealType} Booking`);
 
         if (paymentSuccessful) {
             this.#isPaid = true;
