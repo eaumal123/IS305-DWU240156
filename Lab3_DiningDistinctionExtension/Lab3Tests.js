@@ -35,7 +35,7 @@ if (account1.balance === 80) {
 console.log("TEST 2: Booking payment with sufficient balance");
 const student1 = new Student("S123", "Eau Mallen");
 const account2 = new DiningAccount("Eau Mallen", 100);
-student1.assignAccount(account2);
+student1.assignDiningAccount(account2);
 
 const booking1 = new MealBooking(student1, "Lunch", 25);
 const success1 = booking1.processPayment(); // Assumes processPayment() uses assigned account
@@ -53,7 +53,7 @@ if (success1 && booking1.isConfirmed && account2.balance === 75) {
 console.log("TEST 3: Booking payment with insufficient balance");
 const student2 = new Student("S124", "John Doe");
 const account3 = new DiningAccount("John Doe", 10); // Balance ($10) < Price ($30)
-student2.assignAccount(account3);
+student2.assignDiningAccount(account3);
 
 const booking2 = new MealBooking(student2, "Dinner", 30);
 const success2 = booking2.processPayment();
@@ -72,7 +72,7 @@ console.log("TEST 4: CreditDiningAccount payment within limit");
 const student3 = new Student("S125", "Jane Smith");
 // Balance = $20, Credit Limit = $50 (Can spend up to -$50)
 const creditAccount = new CreditDiningAccount("Jane Smith", 20, 50); 
-student3.assignAccount(creditAccount);
+student3.assignDiningAccount(creditAccount);
 
 const booking3 = new MealBooking(student3, "Dinner", 40); // Costs $40, balance becomes -$20
 const success3 = booking3.processPayment();
