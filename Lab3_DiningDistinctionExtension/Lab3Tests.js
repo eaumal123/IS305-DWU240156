@@ -37,7 +37,7 @@ const student1 = new Student("S123", "Eau Mallen");
 const account2 = new DiningAccount("Eau Mallen", 100);
 student1.assignDiningAccount(account2);
 
-const booking1 = new MealBooking(student1, "Lunch", 25);
+const booking1 = new MealBooking(student1.studentId, "Lunch", 25);
 const success1 = booking1.processPayment(); // Assumes processPayment() uses assigned account
 
 if (success1 && booking1.isConfirmed && account2.balance === 75) {
@@ -55,7 +55,7 @@ const student2 = new Student("S124", "John Doe");
 const account3 = new DiningAccount("John Doe", 10); // Balance ($10) < Price ($30)
 student2.assignDiningAccount(account3);
 
-const booking2 = new MealBooking(student2, "Dinner", 30);
+const booking2 = new MealBooking(student2.studentId, "Dinner", 30);
 const success2 = booking2.processPayment();
 
 if (!success2 && !booking2.isConfirmed && account3.balance === 10) {
@@ -74,7 +74,7 @@ const student3 = new Student("S125", "Jane Smith");
 const creditAccount = new CreditDiningAccount("Jane Smith", 20, 50); 
 student3.assignDiningAccount(creditAccount);
 
-const booking3 = new MealBooking(student3, "Dinner", 40); // Costs $40, balance becomes -$20
+const booking3 = new MealBooking(student.studentId, "Dinner", 40); // Costs $40, balance becomes -$20
 const success3 = booking3.processPayment();
 
 if (success3 && booking3.isConfirmed && creditAccount.balance === -20) {
