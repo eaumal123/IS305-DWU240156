@@ -8,92 +8,96 @@
 * **Repository URL:** https://github.com/eaumal123/IS305-DWU240156.git
 
 # Description
-Lab2 is a Credit_Level extension of the Dining Meal Booking application from lab1. In the previous lab, the student information were all stored in one meal booking object only, thus, resulting in duplicate data whenever a student made multiple meal bookings.
+Labs 1 & 2 Base: Formed the core OOP foundation (e.g., Student class, MealBooking class, and basic payment/booking integration).
 
-In lab2, the design is upgraded by separating the responsibilities:
-- A new Student class is introduced to hold individual student identity data.
-- MealBooking class is updated so that it is connected directly to s Student object, rather than re-stroing student details.
-- A student object cannow be linked to multiple MealBooking objects, demonstrating object composition and relationship management in JavaScript and Node.js.
+Lab 3 Extensions: Introduced DiningAccount as a base class, added specialized subclasses (RewardsDiningAccount, CreditDiningAccount), integrated method overriding and polymorphism, and linked account processing directly to meal bookings.
 
 # Run the Application
-The application is executed in the terminal of the Visual Studio Code. When attempting to run the application, you make sure that you cd into the directory of the application (Lab2_DiningCreditExtension) - `cd Lab2_DiningCreditExtension`. In order to execute the application, run this line `node DiningApp.js` in the working directory.
+The application is executed in the terminal of the Visual Studio Code. When attempting to run the application, you make sure that you cd into the directory of the application (Lab2_DiningCreditExtension) - `cd Lab3_DiningDistinctionExtension`. In order to execute the application, run this line `node DiningApp.js` in the working directory.
 
-# Key Requirements
-- Ensure you have Node.js installed on your system.
-- Make sure all required files (Student.js, MealBooking.js, DiningApp.js and README.md) are all located in the same working directory.
+Command to run the application:
+node DiningApp.js
 
-# Testing
-## Test 1 - Valid Student Creation
+# Object - Oriented Concepts Explained
+## Class Inheritance Hierarchy
+Base Class: DiningAccount
+Subclasses: RewardsDiningAccount and CreditDiningAccount inherit properties and methods from DiningAccount.
+
+## Constructor Chaining
+In JavaScript, when a subclass extends a base (parent) class, it must call super() inside its constructor before accessing this or setting its own properties.
+
+How super() Works
+- Delegation: Calling super(...) invokes the parent class's constructor function.
+
+- Initialization Order: Passing parameters into super() allows the base class to initialize inherited properties (like accountHolder and balance) first.
+
+- Execution Context: Once super() runs, JavaScript binds this to the new subclass instance, allowing you to attach subclass-specific properties (like creditLimit).
+
+Code Example
 ```
---- Welcome to DWU Dining Services ---
+// Base Class
+class DiningAccount {
+  constructor(accountHolder, balance) {
+    this.accountHolder = accountHolder; // Initialized by base class
+    this.balance = balance;             // Initialized by base class
+  }
+}
 
-Enter Student ID: S123
-Enter First Name: John
-Enter Last Name: Doe
-===========================
-     STUDENT DETAILS 
-===========================
-Student ID: S123
-Student Name: John Doe
-===========================
+// Subclass
+class CreditDiningAccount extends DiningAccount {
+  constructor(accountHolder, balance, creditLimit) {
+    // 1. Pass initial values to the base class constructor
+    super(accountHolder, balance);
+
+    // 2. Add subclass-specific field
+    this.creditLimit = creditLimit;
+  }
+}
+
+// Example Usage:
+const myAccount = new CreditDiningAccount("Eau Mallen", 100, 500);
+
+console.log(myAccount.accountHolder); // "Eau Mallen" (from DiningAccount)
+console.log(myAccount.balance);       // 100        (from DiningAccount)
+console.log(myAccount.creditLimit);   // 500        (from CreditDiningAccount)
 ```
 
-## Test 2 - Required Student Input
+## Method Overriding
+Method overriding occurs when a subclass provides its own specific implementation of a method that is already defined in its parent class.
+
+Base Behavior (DiningAccount): The standard payment method checks if the account balance is sufficient to cover a transaction. If balance - amount < 0, the transaction fails to prevent a negative balance.
+
+Overridden Behavior (CreditDiningAccount): CreditDiningAccount overrides this method to alter the spending rules. Instead of stopping at zero, it checks whether the new balance would fall within an authorized overdraft limit (e.g., balance - amount >= -creditLimit).
+
+Execution: If the amount falls within the credit limit, the transaction succeeds—allowing the balance to become negative—and returns true. If the amount exceeds balance + creditLimit, the payment is rejected and returns false.
 ```
---- Welcome to DWU Dining Services ---
+class CreditDiningAccount extends DiningAccount {
+  constructor(accountHolder, balance, creditLimit) {
+    super(accountHolder, balance);
+    this.creditLimit = creditLimit;
+  }
 
-Enter Student ID: S123
-Enter First Name: 
-Enter Last Name: 
-===========================
-      STUDENT DETAILS
-===========================
-Student ID: S123
-Student Name:  
-===========================
-Enter Meal Date (e.g. 2026-07-12): 2026-09-15
-Enter Meal Type (Breakfast, Lunch, Dinner): Dinner
-Enter Quantity: 2
-Enter Dietary Note (Optional): Extra protein
-
-[ERROR] Student Name is required.
+  // Overriding the base pay() method
+  pay(amount) {
+    if (this.balance - amount >= -this.creditLimit) {
+      this.balance -= amount;
+      return true; // Payment accepted, balance can be negative
+    }
+    return false; // Exceeds credit limit
+  }
+}
 ```
+# System Connection & Interaction
+Student & DiningAccount: A Student object is assigned a specific DiningAccount (or one of its subclasses).
 
-## Test 3 - Student and MealBooking Object Linked.
-```--- Welcome to DWU Dining Services ---
+MealBooking & DiningAccount: When a MealBooking processes payment, it calls the payment method on the student's assigned DiningAccount.
 
-Enter Student ID: S123
-Enter First Name: John
-Enter Last Name: Doe
-===========================
-     STUDENT DETAILS
-===========================
-Student ID: S123
-Student Name: John Doe
-===========================
-Enter Meal Date (e.g. 2026-07-12): 2026-09-15
-Enter Meal Type (Breakfast, Lunch, Dinner): Dinner
-Enter Quantity: 2
-Enter Dietary Note (Optional): Extra protein
+Transaction Flow:
+- If payment succeeds, the booking status is marked as confirmed, preventing duplicate payments.
+- If payment fails (e.g., insufficient funds/credit limit exceeded), the booking is not confirmed, and the transaction is logged accordingly.
 
-========================================
-             BOOKING RECEIPT            
-========================================
-Student Name : John Doe
-Student ID   : S123
-Meal Date    : 2026-09-15
-Meal Type    : Dinner
-Quantity     : 2
-Dietary Note : Extra protein
-Status       : Pending
-----------------------------------------
-Total Cost   : K40.00
-========================================
+# Testing & Results
 
---------------------------------------
-Processing status update...
-Updated Status: Confirmed
-```
 
 # AI Tools
 The lab was done with the assitance of AI, to create and debug the codes.
