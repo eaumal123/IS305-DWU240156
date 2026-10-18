@@ -160,11 +160,35 @@ node src/CampusServiceApp.js
 Console Navigation: Use numbers 1 through 10 from the main menu to register users, submit requests, view records, update details, or cancel tickets.
 
 ### Test Report (Pass Level)
-|Test ID | Feature Tested| Test Input| Expected Result|
-|:------| :-------------|:-----------|:-----------
-|T01| User Registration| 
-|
-|
-|
-|
-|
+Test 1 – Valid User Registration
+Field	Details
+Test ID:	T1
+Purpose:	To confirm that a user with valid details can be registered in the system.
+Menu Option:	1. Register User
+Expected Result:	The user is added successfully.
+Actual Result:	The system displayed “Success: User registered successfully.”
+Status:	Pass
+```
+============================================
+     CAMPUS SERVICE REQUEST SYSTEM
+============================================
+1. Register User
+2. Submit Service Request
+3. View Request by ID
+4. View My Requests
+5. View All Requests
+6. Update My Request
+7. Cancel My Request
+8. Search Requests
+9. View Request Summary
+10. Exit
+============================================
+Select an option (1-10): 1
+Enter User ID: 240156
+Enter First Name: Mary
+Enter Last Name: Kala
+Enter Email Address: maryk@gmail.com
+Enter User Type (e.g. Student/Staff): Student
+
+Success: User registered successfully.
+```
