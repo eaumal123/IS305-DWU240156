@@ -192,3 +192,197 @@ Enter User Type (e.g. Student/Staff): Student
 
 Success: User registered successfully.
 ```
+Test 2 - Duplicate User ID
+Field	Details
+Test ID:	T2
+Feature tested: Duplicate user ID
+Test input:	Register User with ID 240156 (Mary Kala, maryk@gmail.com, Student), after 240156 was already registered
+Expected result:	Second user is rejected.
+Actual result	Error: Duplicate user ID: User with ID '240156' already exists.
+Status:	Pass
+Evidence:	duplicate.png (re-take after the fix)
+```
+============================================
+     CAMPUS SERVICE REQUEST SYSTEM
+============================================
+1. Register User
+2. Submit Service Request
+3. View Request by ID
+4. View My Requests
+5. View All Requests
+6. Update My Request
+7. Cancel My Request
+8. Search Requests
+9. View Request Summary
+10. Exit
+============================================
+Select an option (1-10): 1
+Enter User ID: 240156
+Enter First Name: Mary
+Enter Last Name: Kala
+Enter Email Address: maryk@gmail.com
+Enter User Type (e.g. Student/Staff): Student
+
+Error: Duplicate user ID: User with ID 'undefined' already exists.
+
+```
+
+Test 3: Valid Request Submission
+Field	Details
+Test ID	T3 (Attempt 1)
+Feature tested:	Valid request submission
+Test input:	User 240156; Request ID Req-001; Title: Electrical; Description: Room study lights need fixing.; Location: Girls dormitory.; Category: 2; Priority: Moderate
+Expected result:	Request is stored with Submitted status.
+Actual result	Error: Unsupported category: 2
+Status:	Fail
+Cause and fix:	The numbered category menu passed "2" through as text. CampusServiceApp.js now converts the number to the category name. The priority Moderate was also invalid, because only Low, Normal, High and Urgent are allowed.
+
+Test 3 - 2nd Attempt
+```
+============================================
+     CAMPUS SERVICE REQUEST SYSTEM
+============================================
+1. Register User
+2. Submit Service Request
+3. View Request by ID
+4. View My Requests
+5. View All Requests
+6. Update My Request
+7. Cancel My Request
+8. Search Requests
+9. View Request Summary
+10. Exit
+============================================
+Select an option (1-10): 2
+Enter Requester User ID: 240156
+Enter Request ID: Req-001
+Enter Title: Broken study lights
+Enter Description: Study lights at the dormitory is broken.
+Enter Campus Location: Girls Dormitory
+Allowed Categories: 1. ICT Support | 2. Facilities Maintenance | 3. Cleaning and Sanitation | 4. General Campus Service
+Enter Category: 2
+Allowed Priorities: Low, Normal, High, Urgent
+Enter Priority: Normal
+
+Success: Service request submitted successfully with 'Submitted' status.
+```
+
+Test 4 - Invalid Request Category
+```
+============================================
+     CAMPUS SERVICE REQUEST SYSTEM
+============================================
+1. Register User
+2. Submit Service Request
+3. View Request by ID
+4. View My Requests
+5. View All Requests
+6. Update My Request
+7. Cancel My Request
+8. Search Requests
+9. View Request Summary
+10. Exit
+============================================
+Select an option (1-10): 2
+Enter Requester User ID: 240156
+Enter Request ID: Req-001
+Enter Title: Broken lights
+Enter Description: Study lights at the dormitory is not working.
+Enter Campus Location: Girls Dormitory
+Allowed Categories: 1. ICT Support | 2. Facilities Maintenance | 3. Cleaning and Sanitation | 4. General Campus Service
+Enter Category: 2
+Allowed Priorities: Low, Normal, High, Urgent
+Enter Priority: Moderate
+
+Error: Unsupported priority value: Moderate
+```
+Test 5 - View Requester Records
+```
+============================================
+     CAMPUS SERVICE REQUEST SYSTEM
+============================================
+1. Register User
+2. Submit Service Request
+3. View Request by ID
+4. View My Requests
+5. View All Requests
+6. Update My Request
+7. Cancel My Request
+8. Search Requests
+9. View Request Summary
+10. Exit
+============================================
+Select an option (1-10): 4
+Enter User ID to view requests for: 240156
+
+--- Requests for User: 240156 ---
+[ID: Req-001] Title: Broken study lights | Category: Facilities Maintenance | Priority: Normal | Status: Submitted | Requester: Mary Kala
+```
+```
+============================================
+     CAMPUS SERVICE REQUEST SYSTEM
+============================================
+1. Register User
+2. Submit Service Request
+3. View Request by ID
+4. View My Requests
+5. View All Requests
+6. Update My Request
+7. Cancel My Request
+8. Search Requests
+9. View Request Summary
+10. Exit
+============================================
+Select an option (1-10): 4
+Enter User ID to view requests for: 240157
+
+--- Requests for User: 240157 ---
+[ID: Req-002] Title: Wifi Down | Category: ICT Support | Priority: High | Status: Submitted | Requester: Tessa Paul
+```
+
+Test 6 - Cancel Request.
+```
+============================================
+     CAMPUS SERVICE REQUEST SYSTEM
+============================================
+1. Register User
+2. Submit Service Request
+3. View Request by ID
+4. View My Requests
+5. View All Requests
+6. Update My Request
+7. Cancel My Request
+8. Search Requests
+9. View Request Summary
+10. Exit
+============================================
+Select an option (1-10): 3
+Enter Request ID to view: Req-001
+
+[ID: Req-001] Title: Broken study lights | Category: Facilities Maintenance | Priority: Normal | Status: Submitted | Requester: Mary Kala
+Description: Study lights at the dormitory is broken.
+Location: Girls Dormitory
+Submitted: Mon Oct 19 2026 11:22:35 GMT+1000 (Papua New Guinea Time) | Updated: Mon Oct 19 2026 11:22:35 GMT+1000 (Papua New Guinea Time)
+
+============================================
+     CAMPUS SERVICE REQUEST SYSTEM
+============================================
+1. Register User
+2. Submit Service Request
+3. View Request by ID
+4. View My Requests
+5. View All Requests
+6. Update My Request
+7. Cancel My Request
+8. Search Requests
+9. View Request Summary
+10. Exit
+============================================
+Select an option (1-10): 7
+Enter Request ID to cancel: Req-001
+Enter Your User ID (Owner verification): 240156
+
+Success: Request has been cancelled.
+```
+
+
