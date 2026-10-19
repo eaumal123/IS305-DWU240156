@@ -111,7 +111,9 @@ function promptSubmitRequest() {
         rl.question("Enter Description: ", (description) => {
           rl.question("Enter Campus Location: ", (campusLocation) => {
             console.log("Allowed Categories: 1. ICT Support | 2. Facilities Maintenance | 3. Cleaning and Sanitation | 4. General Campus Service");
-            rl.question("Enter Category: ", (category) => {
+            rl.question("Enter Category: ", (categoryInput) => {
+              // Accept a menu number (1-4) or the category name typed in full
+              const category = ServiceRequest.ALLOWED_CATEGORIES[Number(categoryInput) - 1] || categoryInput.trim();
               console.log("Allowed Priorities: Low, Normal, High, Urgent");
               rl.question("Enter Priority: ", (priority) => {
                 try {
