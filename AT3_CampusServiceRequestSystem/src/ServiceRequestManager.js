@@ -13,34 +13,34 @@ class ServiceRequestManager {
 
   registerUser(user) {
     user.validate();
-    const existing = this.findUserById(user.userId);
+    const existing = this.findUserById(user.getuserID());
     if (existing) {
-      throw new Error(`Duplicate user ID: User with ID '${user.userId}' already exists.`);
+      throw new Error(`Duplicate user ID: User with ID '${user.getuserID()}' already exists.`);
     }
     this.users.push(user);
     return true;
   }
 
   findUserById(userId) {
-    return this.users.find(u => u.userId === userId) || null;
+    return this.users.find(u => u.getuserID() === userId) || null;
   }
 
   submitRequest(request) {
     request.validate();
-    const existing = this.findRequestById(request.requestId);
+    const existing = this.findRequestById(request.requestID);
     if (existing) {
-      throw new Error(`Duplicate request ID: Request with ID '${request.requestId}' already exists.`);
+      throw new Error(`Duplicate request ID: Request with ID '${request.requestID}' already exists.`);
     }
     this.requests.push(request);
     return true;
   }
 
   findRequestById(requestId) {
-    return this.requests.find(r => r.requestId === requestId) || null;
+    return this.requests.find(r => r.requestID === requestId) || null;
   }
 
   getRequestsByUser(userId) {
-    return this.requests.filter(r => r.requester.userId === userId);
+    return this.requests.filter(r => r.requester.getuserID() === userId);
   }
 
   getAllRequests() {
@@ -67,8 +67,8 @@ class ServiceRequestManager {
   searchRequests(searchText) {
     if (!searchText) return [];
     const term = searchText.toLowerCase();
-    return this.requests.filter(r => 
-      r.title.toLowerCase().includes(term) || 
+    return this.requests.filter(r =>
+      r.title.toLowerCase().includes(term) ||
       r.description.toLowerCase().includes(term)
     );
   }
