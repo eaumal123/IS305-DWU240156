@@ -1,17 +1,22 @@
 /*
-  Program: CampusServiceApp (Credit Component)
+  Program: CampusServiceApp (Distinction Component)
   Student Name: EAU MALLEN
   Student ID: 240156
-  Date: 19th October 2026
+  Date: 20th October 2026
 */
 
 const readline = require('readline');
+const path = require('path');
 const ServiceRequest = require('./ServiceRequest');
 const ServiceRequestManager = require('./ServiceRequestManager');
+const ReportGenerator = require('./ReportGenerator');
+const { createRepositories } = require('./FileRepositories');
 const { StudentRequester, StaffRequester, ServiceOfficer, Technician } = require('./SpecialisedUsers');
-const { ICTSupportRequest, MaintenanceRequest, CleaningRequest } = require('./SpecialisedRequests');
+const { ICTSupportRequest, MaintenanceRequest, CleaningRequest, GeneralServiceRequest } = require('./SpecialisedRequests');
 
-const manager = new ServiceRequestManager();
+// The app only talks to the manager; the repositories do all file reading and writing
+const DATA_DIR = path.join(__dirname, 'data');
+const manager = new ServiceRequestManager(createRepositories(DATA_DIR));
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -44,10 +49,14 @@ function displayMenu() {
   console.log("17. Filter Requests");
   console.log("18. Sort Requests");
   console.log("19. View Request History");
+  console.log("------------- Distinction ------------------");
+  console.log("20. Management Reports");
+  console.log("21. View Audit Log");
+  console.log("22. Process All Requests (Polymorphism)");
   console.log("--------------------------------------------");
-  console.log("20. Exit");
+  console.log("23. Exit");
   console.log("============================================");
-  rl.question("Select an option (1-20): ", handleMenuChoice);
+  rl.question("Select an option (1-23): ", handleMenuChoice);
 }
 
 function handleMenuChoice(choice) {
@@ -71,12 +80,15 @@ function handleMenuChoice(choice) {
     case '17': promptFilter(); break;
     case '18': promptSort(); break;
     case '19': promptHistory(); break;
-    case '20':
+    case '20': promptReports(); break;
+    case '21': promptAuditLog(); break;
+    case '22': promptProcessAll(); break;
+    case '23':
       console.log("Exiting Campus Service Request System. Goodbye!");
       rl.close();
       break;
     default:
-      console.log("Invalid option. Please enter a number between 1 and 20.");
+      console.log("Invalid option. Please enter a number between 1 and 23.");
       displayMenu();
       break;
   }
@@ -110,9 +122,9 @@ function showRequests(list) {
 }
 
 // Runs an action, prints a success or error message, then returns to the menu
-function runAction(action, successMessage) {
+async function runAction(action, successMessage) {
   try {
-    action();
+    await action();
     console.log(`\nSuccess: ${successMessage}`);
   } catch (error) {
     console.log(`\nError: ${error.message}`);
@@ -128,9 +140,9 @@ function promptRegisterUser() {
         rl.question("Enter Email Address: ", (email) => {
           rl.question("Enter User Type (Student/Staff/Service Officer/Technician): ", (typeInput) => {
             const userType = matchOption(typeInput.trim(), USER_TYPES);
-            const finish = (createUser) => {
+            const finish = async (createUser) => {
               try {
-                manager.registerUser(createUser());
+                await manager.registerUser(createUser());
                 console.log("\nSuccess: User registered successfully.");
               } catch (error) {
                 console.log(`\nError: ${error.message}`);
@@ -179,9 +191,9 @@ function promptSubmitRequest() {
               console.log("Allowed Priorities: Low, Normal, High, Urgent");
               rl.question("Enter Priority: ", (priority) => {
                 const common = { requestID: requestId.trim(), requester: user, title, description, campusLocation, priority: priority.trim() };
-                const submit = (createRequest) => {
+                const submit = async (createRequest) => {
                   try {
-                    manager.submitRequest(createRequest());
+                    await manager.submitRequest(createRequest());
                     console.log("\nSuccess: Service request submitted successfully with 'Submitted' status.");
                   } catch (error) {
                     console.log(`\nError: ${error.message}`);
@@ -207,9 +219,10 @@ function promptSubmitRequest() {
                     ([cleaningArea, risk, serviceType, preferredServiceTime]) => submit(() =>
                       new CleaningRequest(common, { cleaningArea,
                         hygieneRisk: matchOption(risk, CleaningRequest.RISKS), serviceType, preferredServiceTime })));
+                } else if (category === 'General Campus Service') {
+                  submit(() => new GeneralServiceRequest(common));
                 } else {
-                  // General Campus Service, or an unsupported category (rejected by validate())
-                  submit(() => new ServiceRequest(common.requestID, user, title, description, campusLocation, category, common.priority));
+                  submit(() => { throw new Error(`Unsupported category: ${category}`); });
                 }
               });
             });
@@ -435,5 +448,78 @@ function promptHistory() {
   });
 }
 
-// Start the application loop
-displayMenu();
+// ---------- Distinction: reports, audit log, polymorphism ----------
+function promptReports() {
+  const reports = new ReportGenerator(manager.getAllRequests()).catalog();
+  console.log("\n--- Management Reports ---");
+  reports.forEach((r, i) => console.log(`${i + 1}. ${r.title}`));
+  console.log(`${reports.length + 1}. All reports`);
+  rl.question(`Choose a report (1-${reports.length + 1}): `, (choice) => {
+    const n = Number(choice.trim());
+    const chosen = n === reports.length + 1 ? reports : (reports[n - 1] ? [reports[n - 1]] : null);
+    if (!chosen) {
+      console.log(`\nError: Please choose a number from 1 to ${reports.length + 1}.`);
+    } else {
+      chosen.forEach(r => {
+        console.log(`\n--- ${r.title} ---`);
+        ReportGenerator.format(r.data).forEach(line => console.log(line));
+      });
+    }
+    displayMenu();
+  });
+}
+
+function promptAuditLog() {
+  rl.question("Enter Request ID (leave blank for the latest 20 entries): ", async (requestId) => {
+    try {
+      const id = requestId.trim();
+      const entries = await manager.getAuditEntries(id || undefined);
+      const shown = id ? entries : entries.slice(-20);
+      if (shown.length === 0) {
+        console.log("\nNo audit entries found.");
+      } else {
+        console.log("\n--- Audit Log ---");
+        shown.forEach(e => console.log(
+          `${e.auditId} | ${new Date(e.dateTime).toLocaleString()} | ${e.actorRole} ${e.actorId} | ${e.action} | ${e.requestId ?? '-'} | ${e.outcome} | ${e.description}`));
+      }
+    } catch (error) {
+      console.log(`\nError: ${error.message}`);
+    }
+    displayMenu();
+  });
+}
+
+// The same three method calls work for every request type; each type answers in its own way
+function promptProcessAll() {
+  const requests = manager.getAllRequests();
+  if (requests.length === 0) {
+    console.log("\nNo service requests recorded in the system.");
+    return displayMenu();
+  }
+  console.log("\n--- Processing All Requests ---");
+  for (const request of requests) {
+    console.log(`\n[${request.constructor.name}]`);
+    console.log(request.getRequestSummary());
+    console.log(`Priority score: ${request.calculatePriorityScore()}`);
+    console.log(`Target resolution: ${request.getTargetResolutionHours()} hours`);
+  }
+  displayMenu();
+}
+
+// ---------- Start the application ----------
+async function main() {
+  rl.pause();   // do not read input until the saved data has loaded
+  try {
+    const loaded = await manager.init();
+    console.log(`Loaded ${loaded.users} user(s) and ${loaded.requests} request(s) from ${DATA_DIR}`);
+    loaded.warnings.forEach(w => console.log(`Warning: ${w}`));
+  } catch (error) {
+    console.log(`\nError: ${error.message}`);
+    console.log("Saved data could not be loaded, so the program is closing to protect the existing files.");
+    rl.close();
+    return;
+  }
+  displayMenu();
+}
+
+main();
