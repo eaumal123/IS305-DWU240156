@@ -74,4 +74,3 @@ Enter Dietary Note (Optional): No veggies
 
 [ERROR] Invalid meal type. Allowed types are: Breakfast, Lunch, or Dinner.
 ```
-### Test 3 - 
