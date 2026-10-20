@@ -1,8 +1,8 @@
 /*
-  Program: Credit Component - Specialised requests
+  Program: Distinction Component - Specialised requests
   Student Name: EAU MALLEN
   Student ID: 240156
-  Date: 19th October 2026
+  Date: 20th October 2026
 */
 
 const ServiceRequest = require('./ServiceRequest');
@@ -43,6 +43,10 @@ class ICTSupportRequest extends ServiceRequest {
     get networkImpact() { return this.#networkImpact; }
 
     // ---- Overridden methods ----
+    getSpecialisedData() {
+        return { deviceType: this.#deviceType, systemName: this.#systemName, faultType: this.#faultType, networkImpact: this.#networkImpact };
+    }
+
     validate() { super.validate(); this.validateSpecialisedFields(); }
 
     validateSpecialisedFields() {
@@ -53,11 +57,11 @@ class ICTSupportRequest extends ServiceRequest {
     }
 
     getRequestSummary() {
-        return `${super.getRequestSummary()} | Device: ${this.#deviceType} | System: ${this.#systemName} | Fault: ${this.#faultType} | Network Impact: ${this.#networkImpact}`;
+        return `${this.getBaseSummary()} | Device: ${this.#deviceType} | System: ${this.#systemName} | Fault: ${this.#faultType} | Network Impact: ${this.#networkImpact}`;
     }
 
     calculatePriorityScore() {
-        return super.calculatePriorityScore() + ICTSupportRequest.IMPACTS.indexOf(this.#networkImpact) * 2;
+        return this.getBasePriorityScore() + ICTSupportRequest.IMPACTS.indexOf(this.#networkImpact) * 2;
     }
 
     getTargetResolutionHours() {
@@ -114,6 +118,10 @@ class MaintenanceRequest extends ServiceRequest {
     get equipmentAffected() { return this.#equipmentAffected; }
 
     // ---- Overridden methods ----
+    getSpecialisedData() {
+        return { building: this.#building, roomNumber: this.#roomNumber, hazardLevel: this.#hazardLevel, equipmentAffected: this.#equipmentAffected };
+    }
+
     validate() { super.validate(); this.validateSpecialisedFields(); }
 
     validateSpecialisedFields() {
@@ -124,11 +132,11 @@ class MaintenanceRequest extends ServiceRequest {
     }
 
     getRequestSummary() {
-        return `${super.getRequestSummary()} | Building: ${this.#building} | Room: ${this.#roomNumber} | Hazard: ${this.#hazardLevel} | Equipment: ${this.#equipmentAffected}`;
+        return `${this.getBaseSummary()} | Building: ${this.#building} | Room: ${this.#roomNumber} | Hazard: ${this.#hazardLevel} | Equipment: ${this.#equipmentAffected}`;
     }
 
     calculatePriorityScore() {
-        return super.calculatePriorityScore() + MaintenanceRequest.HAZARDS.indexOf(this.#hazardLevel) * 3;
+        return this.getBasePriorityScore() + MaintenanceRequest.HAZARDS.indexOf(this.#hazardLevel) * 3;
     }
 
     getTargetResolutionHours() {
@@ -185,6 +193,10 @@ class CleaningRequest extends ServiceRequest {
     get preferredServiceTime() { return this.#preferredServiceTime; }
 
     // ---- Overridden methods ----
+    getSpecialisedData() {
+        return { cleaningArea: this.#cleaningArea, hygieneRisk: this.#hygieneRisk, serviceType: this.#serviceType, preferredServiceTime: this.#preferredServiceTime };
+    }
+
     validate() { super.validate(); this.validateSpecialisedFields(); }
 
     validateSpecialisedFields() {
@@ -195,11 +207,11 @@ class CleaningRequest extends ServiceRequest {
     }
 
     getRequestSummary() {
-        return `${super.getRequestSummary()} | Area: ${this.#cleaningArea} | Hygiene Risk: ${this.#hygieneRisk} | Service: ${this.#serviceType} | Preferred Time: ${this.#preferredServiceTime}`;
+        return `${this.getBaseSummary()} | Area: ${this.#cleaningArea} | Hygiene Risk: ${this.#hygieneRisk} | Service: ${this.#serviceType} | Preferred Time: ${this.#preferredServiceTime}`;
     }
 
     calculatePriorityScore() {
-        return super.calculatePriorityScore() + CleaningRequest.RISKS.indexOf(this.#hygieneRisk) * 2;
+        return this.getBasePriorityScore() + CleaningRequest.RISKS.indexOf(this.#hygieneRisk) * 2;
     }
 
     getTargetResolutionHours() {
@@ -225,4 +237,31 @@ class CleaningRequest extends ServiceRequest {
     }
 }
 
-module.exports = { ICTSupportRequest, MaintenanceRequest, CleaningRequest };
+// General Campus Service has no extra fields. The base class is abstract-style,
+// so this class supplies the required methods using the shared building blocks.
+class GeneralServiceRequest extends ServiceRequest {
+    static KEYS = [];
+
+    constructor(commonRequestData) {
+        const c = commonRequestData;
+        super(c.requestID, c.requester, c.title, c.description, c.campusLocation, 'General Campus Service', c.priority);  // constructor chaining
+    }
+
+    // ---- Overridden methods ----
+    getRequestSummary() { return this.getBaseSummary(); }
+
+    calculatePriorityScore() { return this.getBasePriorityScore(); }
+
+    getTargetResolutionHours() { return 72; }
+
+    updateDetails(userId, newTitle, newDescription, newCategory, newPriority, specialisedChanges = {}) {
+        if (newCategory && newCategory !== this.category) {
+            throw new Error("The category of a specialised request cannot be changed.");
+        }
+        const unknown = Object.keys(specialisedChanges);
+        if (unknown.length) throw new Error(`Cannot update field(s): ${unknown.join(', ')}`);
+        super.updateDetails(userId, newTitle, newDescription, undefined, newPriority);
+    }
+}
+
+module.exports = { ICTSupportRequest, MaintenanceRequest, CleaningRequest, GeneralServiceRequest };
