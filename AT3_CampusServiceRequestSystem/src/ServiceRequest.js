@@ -1,8 +1,8 @@
 /*
-  Program: Credit Component - Service Request base
+  Program: Distinction Component - Service Request base (abstract-style)
   Student Name: EAU MALLEN
   Student ID: 240156
-  Date: 19th October 2026
+  Date: 20th October 2026
 */
 
 class ServiceRequest{
@@ -49,7 +49,13 @@ class ServiceRequest{
         'Cancelled': []
     };
 
+    // Statuses that can only be reached once a Technician has been assigned
+    static STATUSES_NEEDING_TECHNICIAN = ['Assigned', 'In Progress', 'Resolved', 'Closed'];
+
     constructor(requestID, requester, title, description, campusLocation, category, priority, status = 'Submitted', dateSubmitted = new Date(), dateUpdated = new Date()){
+        if (new.target === ServiceRequest) {
+            throw new Error("ServiceRequest is an abstract-style base class and cannot be created directly. Use a specialised request class.");
+        }
         this.#requestID = requestID;
         this.#requester = requester;
         this.#title = title;
@@ -124,13 +130,36 @@ class ServiceRequest{
     // ---- Hooks that the specialised request classes override ----
     validateSpecialisedFields() { return true; }
 
-    calculatePriorityScore() {
+    // The fields that belong only to a specialised request (saved inside "specialisedData")
+    getSpecialisedData() { return {}; }
+
+    // ---- Abstract-style methods: every request class must supply its own version ----
+    calculatePriorityScore() { throw this.#notImplemented('calculatePriorityScore'); }
+
+    getTargetResolutionHours() { throw this.#notImplemented('getTargetResolutionHours'); }
+
+    getRequestSummary() { throw this.#notImplemented('getRequestSummary'); }
+
+    // ---- Shared building blocks the subclasses reuse inside their own versions ----
+    getBasePriorityScore() {
         return ServiceRequest.ALLOWED_PRIORITIES.indexOf(this.#priority) + 1;
     }
 
-    getTargetResolutionHours() { return 72; }
+    getBaseSummary() {
+        return `[ID: ${this.#requestID}] Title: ${this.#title} | Category: ${this.#category} | Priority: ${this.#priority} | Status: ${this.#status} | Requester: ${this.#requester.getFullName()}`;
+    }
 
     // ---- Private helpers ----
+    #notImplemented(methodName) {
+        return new Error(`${this.constructor.name} must implement ${methodName}(). The ServiceRequest base class does not provide it.`);
+    }
+
+    static #toDate(value, label) {
+        const date = value === undefined || value === null ? new Date(NaN) : new Date(value);
+        if (Number.isNaN(date.getTime())) throw new Error(`Invalid ${label}: ${value}`);
+        return date;
+    }
+
     #log(previousStatus, newStatus, action, actor, comment = '') {
         this.#history.push({
             previousStatus,
@@ -271,8 +300,87 @@ class ServiceRequest{
         this.#transition('Resolved', 'Resolved', technician, comment);
     }
 
-    getRequestSummary() {
-        return `[ID: ${this.#requestID}] Title: ${this.#title} | Category: ${this.#category} | Priority: ${this.#priority} | Status: ${this.#status} | Requester: ${this.#requester.getFullName()}`;
+    // ---- Distinction: JSON storage ----
+    // Plain data for serviceRequests.json (history is stored separately in requestHistory.json)
+    toData() {
+        return {
+            requestId: this.#requestID,
+            requestType: this.constructor.name,
+            requesterId: this.#requester.getuserID(),
+            title: this.#title,
+            description: this.#description,
+            location: this.#campusLocation,
+            category: this.#category,
+            priority: this.#priority,
+            status: this.#status,
+            priorityAssigned: this.#priorityAssigned,
+            assignedTechnicianId: this.#assignedTechnicianID,
+            dateSubmitted: this.#dateSubmitted.toISOString(),
+            dateUpdated: this.#dateUpdated.toISOString(),
+            progressUpdates: this.#progressUpdates.map(p => ({ note: p.note, by: p.by, dateTime: p.dateTime.toISOString() })),
+            specialisedData: this.getSpecialisedData()
+        };
+    }
+
+    // Plain records for requestHistory.json
+    toHistoryData() {
+        return this.#history.map((h, i) => ({
+            historyId: `${this.#requestID}-H${i + 1}`,
+            requestId: this.#requestID,
+            previousStatus: h.previousStatus,
+            newStatus: h.newStatus,
+            action: h.action,
+            actorId: h.actorID,
+            actorRole: h.actorRole,
+            comment: h.comment,
+            dateTime: h.dateTime.toISOString()
+        }));
+    }
+
+    // Used by ServiceRequestFactory to put saved state back onto a newly constructed object.
+    // Everything is checked and converted first, so a bad record changes nothing.
+    restoreState(state = {}) {
+        const { status, priorityAssigned = false, assignedTechnicianId = null,
+                progressUpdates = [], history = [], dateSubmitted, dateUpdated } = state;
+
+        if (!ServiceRequest.STATUSES.includes(status)) throw new Error(`Unsupported status: ${status}`);
+        if (ServiceRequest.STATUSES_NEEDING_TECHNICIAN.includes(status) && !assignedTechnicianId) {
+            throw new Error(`A request with status ${status} must have an assigned Technician.`);
+        }
+        if (!Array.isArray(progressUpdates)) throw new Error("Saved progress updates must be a list.");
+        if (!Array.isArray(history)) throw new Error("Saved request history must be a list.");
+
+        const submitted = ServiceRequest.#toDate(dateSubmitted, 'date submitted');
+        const updated = ServiceRequest.#toDate(dateUpdated ?? dateSubmitted, 'date updated');
+        const progress = progressUpdates.map(p => {
+            if (!p || typeof p.note !== 'string' || p.note.trim() === '') {
+                throw new Error("A saved progress update is missing its note.");
+            }
+            return { note: p.note, by: p.by, dateTime: ServiceRequest.#toDate(p.dateTime, 'progress update date') };
+        });
+        const entries = history.map(h => {
+            if (!h || !h.action || !ServiceRequest.STATUSES.includes(h.newStatus) ||
+                (h.previousStatus != null && !ServiceRequest.STATUSES.includes(h.previousStatus))) {
+                throw new Error("A saved history entry is incomplete or has an unsupported status.");
+            }
+            return {
+                previousStatus: h.previousStatus ?? null,
+                newStatus: h.newStatus,
+                action: h.action,
+                actorID: h.actorId ?? 'Unknown',
+                actorRole: h.actorRole ?? 'Unknown',
+                comment: h.comment ?? '',
+                dateTime: ServiceRequest.#toDate(h.dateTime, 'history date')
+            };
+        });
+
+        this.#status = status;
+        this.#priorityAssigned = Boolean(priorityAssigned);
+        this.#assignedTechnicianID = assignedTechnicianId || null;
+        this.#dateSubmitted = submitted;
+        this.#dateUpdated = updated;
+        this.#progressUpdates = progress;
+        if (entries.length > 0) this.#history = entries;   // otherwise keep the entry made by the constructor
     }
 }
 
