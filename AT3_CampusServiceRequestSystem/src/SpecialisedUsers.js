@@ -1,8 +1,8 @@
 /*
-  Program: Credit Component - Specialised users
+  Program: Distinction Component - Specialised users
   Student Name: EAU MALLEN
   Student ID: 240156
-  Date: 19th October 2026
+  Date: 20th October 2026
 */
 
 const User = require('./User');
@@ -25,6 +25,7 @@ class StudentRequester extends User {
     get programme() { return this.#programme; }
     get yearLevel() { return this.#yearLevel; }
     getRoleDetails() { return `Programme: ${this.#programme} | Year Level: ${this.#yearLevel}`; }
+    getRoleData() { return { programme: this.#programme, yearLevel: this.#yearLevel }; }
 }
 
 class StaffRequester extends User {
@@ -37,6 +38,7 @@ class StaffRequester extends User {
     }
     get department() { return this.#department; }
     getRoleDetails() { return `Department: ${this.#department}`; }
+    getRoleData() { return { department: this.#department }; }
 }
 
 class ServiceOfficer extends User {
@@ -49,6 +51,7 @@ class ServiceOfficer extends User {
     }
     get serviceSection() { return this.#serviceSection; }
     getRoleDetails() { return `Service Section: ${this.#serviceSection}`; }
+    getRoleData() { return { serviceSection: this.#serviceSection }; }
 }
 
 class Technician extends User {
@@ -61,6 +64,7 @@ class Technician extends User {
     }
     get speciality() { return this.#speciality; }
     getRoleDetails() { return `Speciality: ${this.#speciality}`; }
+    getRoleData() { return { speciality: this.#speciality }; }
 }
 
 module.exports = { StudentRequester, StaffRequester, ServiceOfficer, Technician };
