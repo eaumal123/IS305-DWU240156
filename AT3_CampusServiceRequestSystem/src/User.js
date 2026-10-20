@@ -54,6 +54,21 @@ class User {
         return `${this.#firstName} ${this.#lastName}`;
     }
 
+    // Distinction: role-specific fields saved with the user (specialised users override this)
+    getRoleData(){ return {}; }
+
+    // Distinction: plain data for JSON storage
+    toData(){
+        return {
+            userId: this.#userID,
+            firstName: this.#firstName,
+            lastName: this.#lastName,
+            emailAddress: this.#emailAddress,
+            userType: this.#userType,
+            ...this.getRoleData()
+        };
+    }
+
     // Validation
     validate(){
         if(!this.#userID || this.#userID.trim() === '') throw new Error("Missing user ID");
@@ -63,7 +78,7 @@ class User {
     }
 
     displayInfo(){
-        console.log(`[User ID: ${this.#userID}] Name: ${this.getFullName()} | Email: ${this.emailAddress} | Type: ${this.#userType}`);
+        console.log(`[User ID: ${this.#userID}] Name: ${this.getFullName()} | Email: ${this.#emailAddress} | Type: ${this.#userType}`);
     }
 }
 
