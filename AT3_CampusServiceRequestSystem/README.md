@@ -1565,3 +1565,859 @@ Enter Technician ID: T1
 
 Success: Technician assigned. Status is now Assigned.
 ```
+
+**Distinction Extension: Polymorphism, JSON Storage and Reporting**
+---
+
+## 1. Actors and User Roles
+
+### Primary actors
+
+| Actor | Class | Role-specific data | What they do |
+|---|---|---|---|
+| Student Requester | `StudentRequester` | Programme, year level (1 to 8) | Submits and manages their own service requests |
+| Staff Requester | `StaffRequester` | Department | Submits and manages their own service requests |
+| Service Officer | `ServiceOfficer` | Service section | Reviews requests, assigns priority and a Technician, verifies and closes completed work |
+| Technician | `Technician` | Technical speciality | Starts work, records progress and resolves requests assigned to them |
+
+### Supporting actors
+
+| Actor | Description |
+|---|---|
+| JSON data files | The persistent store (`users.json`, `serviceRequests.json`, `requestHistory.json`, `auditLog.json`). Accessed only through the repository classes. |
+| Test runner | The built-in Node.js test runner, which runs the automated tests against temporary files. |
+
+### Permission matrix
+
+| Action | Requester (Student / Staff) | Service Officer | Technician |
+|---|:---:|:---:|:---:|
+| Register a user | Yes | Yes | Yes |
+| Submit a request | Yes | Yes | Yes |
+| Update own request (only while `Submitted`) | Owner only | No | No |
+| Cancel own request (only while `Submitted`) | Owner only | No | No |
+| Review a request | No | Yes | No |
+| Assign priority | No | Yes | No |
+| Assign a Technician | No | Yes | No |
+| Start work, record progress, resolve | No | No | Assigned Technician only |
+| Close a request | No | Yes | No |
+| View, search, filter, sort, history, reports, audit log | Yes | Yes | Yes |
+
+Role checks are enforced inside the `ServiceRequest` class itself, so they apply no matter how the class is called.
+
+---
+
+## 2. Functional Requirements
+
+Each requirement is tagged with the level that introduced it.
+
+### User and request management
+
+| ID | Requirement | Level |
+|---|---|---|
+| FR1 | Register a user of type Student, Staff, Service Officer or Technician with role-specific details. | Pass |
+| FR2 | Reject duplicate user IDs and invalid user data (blank fields, invalid email, year level outside 1 to 8). | Pass |
+| FR3 | Submit a request in one of four categories: ICT Support, Facilities Maintenance, Cleaning and Sanitation, General Campus Service. | Pass |
+| FR4 | Capture category-specific fields for ICT, Maintenance and Cleaning requests and validate them. | Credit |
+| FR5 | Reject duplicate request IDs and invalid request data. | Pass |
+| FR6 | View a request by ID, view a user's own requests, and view all requests. | Pass |
+| FR7 | Let the owner update title, description, priority and category-specific fields while the request is `Submitted`. | Pass |
+| FR8 | Let the owner cancel a request while it is `Submitted`. | Pass |
+| FR9 | Search requests by ID or title, and show a count of requests per status. | Pass |
+
+### Workflow
+
+| ID | Requirement | Level |
+|---|---|---|
+| FR10 | Move requests only through the permitted flow: `Submitted` → `Reviewed` → `Assigned` → `In Progress` → `Resolved` → `Closed`. A `Submitted` request may instead be `Cancelled`. | Credit |
+| FR11 | Only a Service Officer may review, assign priority, assign a Technician and close. | Credit |
+| FR12 | A priority must be assigned (while `Reviewed`) before a Technician can be assigned. | Credit |
+| FR13 | Only the assigned Technician may start work, record progress and resolve. | Credit |
+| FR14 | Record every status change and action in a per-request history. | Credit |
+| FR15 | Filter requests by category, status, priority and Technician; sort by date and by priority. | Credit |
+
+### Distinction extension
+
+| ID | Requirement | Level |
+|---|---|---|
+| FR16 | Store all request types in one collection and process them with the same method calls (`getRequestSummary()`, `calculatePriorityScore()`, `getTargetResolutionHours()`), with each type giving its own result. | Distinction |
+| FR17 | Treat `ServiceRequest` as abstract-style: it cannot be created directly, and its three required methods throw a clear error if a subclass does not supply them. | Distinction |
+| FR18 | Save users, requests, request history and audit records to JSON files in a `data` folder. | Distinction |
+| FR19 | On start-up, load existing records and create an empty array for any missing file. | Distinction |
+| FR20 | Save after each successful registration, submission, update and status change. Never save an incomplete or invalid record. | Distinction |
+| FR21 | Show clear file-reading and file-writing error messages. | Distinction |
+| FR22 | Rebuild the correct specialised object from saved data through a factory, so restored objects keep their validation and polymorphic behaviour. | Distinction |
+| FR23 | Keep file access in repository classes. The console app never reads or writes files. | Distinction |
+| FR24 | Record an audit entry (audit ID, actor ID and role, action, request ID, description, date and time, outcome) for user registration, request creation, updates, priority changes, Technician assignment, status changes, cancellation, resolution and closure. | Distinction |
+| FR25 | Provide nine management reports (see [section 7.6](#76-management-reports)), built with `filter()`, `map()`, `reduce()` and `sort()`. | Distinction |
+| FR26 | Provide at least ten automated tests using the built-in Node.js test runner and temporary files. | Distinction |
+
+---
+
+## 3. Non-Functional Requirements
+
+| Category | Requirement | How it is met |
+|---|---|---|
+| Technology | No database; JSON files only, using the built-in `fs/promises` module. | No third-party packages are used. `package.json` has no dependencies. |
+| Portability | Runs on any machine with Node.js 20 or later. | Uses only built-in modules. Developed and tested on Node.js 22. |
+| Reliability | A failed save must not corrupt data or leave memory and files disagreeing. | Writes go to a temporary file first and are then renamed. If a save fails, the in-memory request is rolled back to its previous state. A corrupt file is never overwritten. |
+| Data integrity | Invalid or incomplete records are never stored. | Validation runs before every save. The factory re-validates every record on load. |
+| Data safety | Data files hold simulated data only. | Files contain plain JSON, with no code, passwords or confidential information. |
+| Maintainability | Clear separation of responsibilities. | Console menu, domain classes, manager, repositories, factories and reports are separate modules. |
+| Extensibility | A new request type should be easy to add. | Add a subclass, register it in `Factories.js` and implement the three required methods. |
+| Testability | Tests must not touch real data. | Every file-based test uses its own temporary folder, deleted afterwards. |
+| Usability | Messages should be understandable. | Every failure prints `Error:` with a plain-language reason. Inputs such as priority and user type are case-insensitive. |
+| Auditability | Actions can be traced. | Successful and rejected actions are both written to `auditLog.json`. |
+| Performance | Responsive for a small campus dataset. | Each repository operation reads and writes one whole file. This is fast for hundreds of records (see limitations). |
+
+---
+
+## 4. Assumptions and Limitations
+
+### Assumptions
+
+- The application is used by one person at a time on one machine.
+- Users identify themselves by typing their user ID. The system is a teaching prototype, so there are no passwords or login.
+- All data is simulated. IDs are text, are case-sensitive, and have leading and trailing spaces ignored.
+- Anyone may register any user type. A real system would restrict who can create Service Officers and Technicians.
+- A request is **overdue** when it is not `Resolved`, `Closed` or `Cancelled` and the time since submission is longer than its own target resolution hours.
+- A request counts as **completed** for the Technician and resolution-time reports once it reaches `Resolved` or `Closed`.
+- Resolution time is measured from the submission date to the moment the `Resolved` status was recorded in the history.
+- Dates are stored as ISO 8601 UTC strings and shown in the local format on screen.
+
+### Limitations
+
+- **No authentication.** Any user can type another user's ID. Role and ownership checks still apply to the ID that is typed.
+- **No concurrent access.** Two copies of the program running at once could overwrite each other's changes, because there is no file locking.
+- **Whole-file reads and writes.** Every operation loads and rewrites an entire JSON file. This does not scale to very large datasets.
+- **Not a transaction across files.** A change touches up to three files (requests, history, audit). If the history write fails, the request write is undone as a best effort. If only the audit write fails, the change stays saved and an error explains that the audit record is missing.
+- **Skipped bad records.** A saved record that fails validation at start-up is skipped with a warning and left unchanged in the file, so it is not lost but is not loaded either.
+- **A fourth request class.** The brief names three specialised types. A fourth class, `GeneralServiceRequest`, was added so the General Campus Service category still works now that the base class is abstract.
+- **Status flow is fixed.** A request cannot move backwards, `Closed` and `Cancelled` are final, and a category cannot be changed once a request exists.
+- **No editing of users.** Users can be registered but not edited or deleted from the menu.
+- **Pasted input.** The menu reads answers one line at a time. If several answers are pasted at once, lines that arrive while a save is in progress can be lost. Typing normally is not affected.
+
+---
+
+## 5. User Stories
+
+### Requesters (Student and Staff)
+
+| ID | Story | Acceptance criteria |
+|---|---|---|
+| US1 | As a **student or staff member**, I want to register with my details so that I can use the system. | The user is saved to `users.json`. A duplicate ID or invalid email is rejected with a clear message. |
+| US2 | As a **requester**, I want to submit a request with details specific to its type so that the right team gets the information they need. | The request is created as `Submitted`, saved, and an audit entry is written. Missing or invalid fields are rejected and nothing is saved. |
+| US3 | As a **requester**, I want to see my own requests and their status so that I know what is happening. | "View My Requests" lists every request for my ID. |
+| US4 | As a **requester**, I want to correct a request before anyone reviews it so that the details are accurate. | Update succeeds only for the owner and only while `Submitted`. |
+| US5 | As a **requester**, I want to cancel a request I no longer need so that it is not worked on. | Cancel succeeds only for the owner and only while `Submitted`. |
+| US6 | As a **requester**, I want to search by ID or title so that I can find a request quickly. | Search returns requests whose ID or title contains the text. |
+
+### Service Officers
+
+| ID | Story | Acceptance criteria |
+|---|---|---|
+| US7 | As a **Service Officer**, I want to review new requests so that they enter the workflow. | Status moves from `Submitted` to `Reviewed`. Non-officers are rejected. |
+| US8 | As a **Service Officer**, I want to set a priority so that urgent problems are handled first. | Priority can be set only while `Reviewed`. |
+| US9 | As a **Service Officer**, I want to assign a Technician so that someone is responsible. | Assignment needs a priority first and a valid Technician ID. Status becomes `Assigned`. |
+| US10 | As a **Service Officer**, I want to verify and close resolved requests so that finished work is confirmed. | Close works only from `Resolved`. |
+| US11 | As a **Service Officer**, I want reports on status, category, priority, urgency, overdue work, Technician workload, resolution time and location so that I can manage the service. | The Reports menu shows all nine reports. |
+
+### Technicians
+
+| ID | Story | Acceptance criteria |
+|---|---|---|
+| US12 | As a **Technician**, I want to see the requests assigned to me so that I know what to do. | Filter by Technician ID lists my requests. |
+| US13 | As a **Technician**, I want to start work and record progress notes so that others can follow what has been done. | Only the assigned Technician can do this, and notes need text. |
+| US14 | As a **Technician**, I want to mark a request resolved so that the officer can verify it. | Resolve works only from `In Progress`. |
+
+### Cross-cutting
+
+| ID | Story | Acceptance criteria |
+|---|---|---|
+| US15 | As a **user**, I want my data to still be there after I close the program so that work is not lost. | Restarting the program loads all users and requests, with the same status, history and behaviour. |
+| US16 | As an **administrator**, I want an audit log so that I can see who did what and whether it succeeded. | Every action, including rejected attempts, is logged with a unique audit ID. |
+| US17 | As a **user**, I want to see each request's full history so that I can trace its progress. | "View Request History" lists every status change with time, actor and comment. |
+| US18 | As a **developer**, I want automated tests that use temporary files so that I can change the code safely without damaging real data. | `node --test` runs the suite and leaves `data/` untouched. |
+| US19 | As a **user**, I want a clear message when a file cannot be read or written so that I know what to fix. | Errors name the file and the reason. |
+
+---
+
+## 6. UML System Design
+
+The diagrams use [Mermaid](https://mermaid.js.org/), which GitHub and VS Code (with a Mermaid preview extension) render automatically.
+
+### 6.1 Use case diagram
+
+```mermaid
+flowchart LR
+    Req(["Student / Staff Requester"])
+    Off(["Service Officer"])
+    Tech(["Technician"])
+
+    subgraph System["Campus Service Request System"]
+        UC1["Register user"]
+        UC2["Submit request"]
+        UC3["View / search / filter / sort requests"]
+        UC4["Update own request"]
+        UC5["Cancel own request"]
+        UC6["Review request"]
+        UC7["Assign priority"]
+        UC8["Assign Technician"]
+        UC9["Start work"]
+        UC10["Record progress"]
+        UC11["Resolve request"]
+        UC12["Close request"]
+        UC13["View request history"]
+        UC14["View management reports"]
+        UC15["View audit log"]
+        UC16["Process all requests polymorphically"]
+    end
+
+    Req --> UC1 & UC2 & UC3 & UC4 & UC5 & UC13 & UC14 & UC15 & UC16
+    Off --> UC1 & UC3 & UC6 & UC7 & UC8 & UC12 & UC13 & UC14 & UC15 & UC16
+    Tech --> UC1 & UC3 & UC9 & UC10 & UC11 & UC13 & UC14 & UC15 & UC16
+```
+
+### 6.2 Layered architecture
+
+```mermaid
+flowchart TB
+    UI["CampusServiceApp.js<br/>Console menu and input"]
+    MGR["ServiceRequestManager<br/>Workflow, saving, rollback, auditing"]
+    REP["ReportGenerator<br/>Management reports"]
+    DOM["Domain classes<br/>User and ServiceRequest hierarchies"]
+    FAC["Factories<br/>UserFactory, ServiceRequestFactory"]
+    REPO["File repositories<br/>Read and write JSON"]
+    FILES[("data/*.json")]
+
+    UI --> MGR
+    UI --> REP
+    MGR --> DOM
+    MGR --> FAC
+    FAC --> DOM
+    MGR --> REPO
+    REPO --> FILES
+    REP --> DOM
+```
+
+The console app never touches the repositories' files. It only calls the manager and the report generator.
+
+### 6.3 Class diagram
+
+```mermaid
+classDiagram
+    class User {
+        -userID
+        -firstName
+        -lastName
+        -emailAddress
+        -userType
+        +validate()
+        +getFullName()
+        +getRoleData()
+        +toData()
+    }
+    class StudentRequester {
+        -programme
+        -yearLevel
+    }
+    class StaffRequester {
+        -department
+    }
+    class ServiceOfficer {
+        -serviceSection
+    }
+    class Technician {
+        -speciality
+    }
+    User <|-- StudentRequester
+    User <|-- StaffRequester
+    User <|-- ServiceOfficer
+    User <|-- Technician
+
+    class ServiceRequest {
+        <<abstract>>
+        -requestID
+        -title
+        -description
+        -campusLocation
+        -category
+        -priority
+        -status
+        -assignedTechnicianID
+        -progressUpdates
+        -history
+        +validate()
+        +updateDetails()
+        +cancelRequest()
+        +review()
+        +assignPriority()
+        +assignTechnician()
+        +startWork()
+        +recordProgress()
+        +resolve()
+        +close()
+        +calculatePriorityScore()*
+        +getTargetResolutionHours()*
+        +getRequestSummary()*
+        +toData()
+        +toHistoryData()
+        +restoreState()
+    }
+    class ICTSupportRequest {
+        -deviceType
+        -systemName
+        -faultType
+        -networkImpact
+    }
+    class MaintenanceRequest {
+        -building
+        -roomNumber
+        -hazardLevel
+        -equipmentAffected
+    }
+    class CleaningRequest {
+        -cleaningArea
+        -hygieneRisk
+        -serviceType
+        -preferredServiceTime
+    }
+    class GeneralServiceRequest
+    ServiceRequest <|-- ICTSupportRequest
+    ServiceRequest <|-- MaintenanceRequest
+    ServiceRequest <|-- CleaningRequest
+    ServiceRequest <|-- GeneralServiceRequest
+    ServiceRequest "*" --> "1" User : requester
+
+    class ServiceRequestManager {
+        +init()
+        +registerUser()
+        +submitRequest()
+        +updateRequest()
+        +cancelRequest()
+        +reviewRequest()
+        +assignPriority()
+        +assignTechnician()
+        +startWork()
+        +recordProgress()
+        +resolveRequest()
+        +closeRequest()
+        +filterRequests()
+        +sortByDate()
+        +sortByPriority()
+        +getAuditEntries()
+    }
+    ServiceRequestManager "1" o-- "*" User
+    ServiceRequestManager "1" o-- "*" ServiceRequest
+
+    class UserFactory {
+        +createFromData()
+    }
+    class ServiceRequestFactory {
+        +createFromData()
+    }
+    ServiceRequestManager ..> UserFactory
+    ServiceRequestManager ..> ServiceRequestFactory
+    ServiceRequestFactory ..> ServiceRequest : creates
+
+    class JsonFileRepository {
+        +loadAll()
+        +saveAll()
+        +create()
+        +findById()
+        +update()
+        +delete()
+    }
+    class UserFileRepository
+    class ServiceRequestFileRepository {
+        +findByRequester()
+        +findByTechnician()
+    }
+    class HistoryFileRepository {
+        +findByRequest()
+        +replaceForRequest()
+    }
+    class AuditFileRepository {
+        +append()
+        +findByRequest()
+        +findByActor()
+    }
+    JsonFileRepository <|-- UserFileRepository
+    JsonFileRepository <|-- ServiceRequestFileRepository
+    JsonFileRepository <|-- HistoryFileRepository
+    JsonFileRepository <|-- AuditFileRepository
+    ServiceRequestManager --> JsonFileRepository : uses
+
+    class ReportGenerator {
+        +byStatus()
+        +byCategory()
+        +byPriority()
+        +urgentRequests()
+        +overdueRequests()
+        +assignedByTechnician()
+        +completedByTechnician()
+        +averageResolutionTime()
+        +volumeByLocation()
+        +catalog()
+    }
+    ReportGenerator ..> ServiceRequest : reads
+```
+
+`*` after a method name marks an abstract-style method that each subclass must supply.
+
+### 6.4 Request status state diagram
+
+```mermaid
+stateDiagram-v2
+    state "In Progress" as InProgress
+    [*] --> Submitted
+    Submitted --> Reviewed : Officer reviews
+    Submitted --> Cancelled : Requester cancels
+    Reviewed --> Assigned : Officer assigns Technician
+    Assigned --> InProgress : Technician starts work
+    InProgress --> Resolved : Technician resolves
+    Resolved --> Closed : Officer closes
+    Closed --> [*]
+    Cancelled --> [*]
+```
+
+Assigning a priority and recording progress are logged in the history but do not change the status.
+
+### 6.5 Sequence diagram: a status change with saving and auditing
+
+```mermaid
+sequenceDiagram
+    actor O as Service Officer
+    participant App as CampusServiceApp
+    participant M as ServiceRequestManager
+    participant R as ServiceRequest
+    participant Repo as Repositories
+
+    O->>App: Review request (officer ID, request ID)
+    App->>M: reviewRequest()
+    M->>M: Take snapshot of the request
+    M->>R: review(officer)
+    alt Not allowed (wrong role or invalid transition)
+        R-->>M: throws Error
+        M->>Repo: audit.append (outcome: Rejected)
+        M-->>App: throws Error
+        App-->>O: Error: reason
+    else Allowed
+        R-->>M: status changed
+        M->>Repo: requests.update and history.replaceForRequest
+        alt Save fails
+            Repo-->>M: RepositoryError
+            M->>M: Roll back from snapshot
+            M-->>App: throws Error
+            App-->>O: Error: could not write file
+        else Saved
+            M->>Repo: audit.append (outcome: Success)
+            M-->>App: true
+            App-->>O: Success message
+        end
+    end
+```
+
+### 6.6 Sequence diagram: start-up and restoring saved objects
+
+```mermaid
+sequenceDiagram
+    participant App as CampusServiceApp
+    participant M as ServiceRequestManager
+    participant Repo as Repositories
+    participant F as Factories
+
+    App->>M: init()
+    M->>Repo: loadAll() for users, requests, history, audit
+    Note over Repo: A missing file is created as an empty array
+    Repo-->>M: plain data records
+    loop each user record
+        M->>F: UserFactory.createFromData()
+        F-->>M: User object, or error (skipped with a warning)
+    end
+    loop each request record
+        M->>F: ServiceRequestFactory.createFromData(record, findUser, history)
+        F-->>M: specialised request object, or error (skipped with a warning)
+    end
+    M-->>App: counts and warnings
+    App->>App: display menu
+```
+
+---
+
+## 7. Technical Documentation
+
+### 7.1 Technology
+
+| Item | Detail |
+|---|---|
+| Language | JavaScript (CommonJS modules) |
+| Runtime | Node.js 20 or later (tested on 22) |
+| Console input | Built-in `readline` |
+| File access | Built-in `fs/promises` (only inside `FileRepositories.js`) |
+| Tests | Built-in `node:test` and `node:assert` |
+| Dependencies | None |
+
+### 7.2 Object-oriented concepts used
+
+| Concept | Where |
+|---|---|
+| Encapsulation | Private `#` fields with getters and controlled setters in `User` and `ServiceRequest`. |
+| Inheritance | `StudentRequester`, `StaffRequester`, `ServiceOfficer` and `Technician` extend `User`. The four request classes extend `ServiceRequest`. Repositories extend `JsonFileRepository`. |
+| Constructor chaining | Every subclass calls `super(...)`. |
+| Polymorphism | One collection holds all request types and the same three calls give type-specific results. |
+| Abstraction | `ServiceRequest` cannot be instantiated and requires three methods from its subclasses. |
+| Factory pattern | `UserFactory` and `ServiceRequestFactory` rebuild objects from saved data. |
+| Repository pattern | File access is separated from domain logic and the console. |
+
+### 7.3 Polymorphism and abstract-style methods
+
+`ServiceRequest` throws if created directly (`new.target` check). Its three required methods throw `"<ClassName> must implement <method>()"` unless the subclass overrides them. Subclasses reuse two helpers, `getBaseSummary()` and `getBasePriorityScore()`.
+
+The base priority score is Low 1, Normal 2, High 3, Urgent 4.
+
+| Type | Priority score | Target resolution hours |
+|---|---|---|
+| `ICTSupportRequest` | base + (network impact position) × 2 | None 72, Single User 48, Department 24, Campus-wide 4 |
+| `MaintenanceRequest` | base + (hazard level position) × 3 | Low 120, Medium 48, High 8 |
+| `CleaningRequest` | base + (hygiene risk position) × 2 | Low 48, Medium 24, High 6 |
+| `GeneralServiceRequest` | base | 72 |
+
+Position means the index in the list: network impact `None, Single User, Department, Campus-wide` (0 to 3), and hazard and hygiene `Low, Medium, High` (0 to 2).
+
+Specialised fields:
+
+| Type | Fields |
+|---|---|
+| ICT Support | `deviceType`, `systemName`, `faultType`, `networkImpact` |
+| Facilities Maintenance | `building`, `roomNumber`, `hazardLevel`, `equipmentAffected` |
+| Cleaning and Sanitation | `cleaningArea`, `hygieneRisk`, `serviceType`, `preferredServiceTime` |
+| General Campus Service | none |
+
+### 7.4 Data files
+
+All four files live in `data/` and each holds a JSON array. The files contain plain data only.
+
+**`users.json`**
+```json
+{
+  "userId": "S1",
+  "firstName": "Ana",
+  "lastName": "Kila",
+  "emailAddress": "ana@wpu.example",
+  "userType": "Student",
+  "programme": "Computing",
+  "yearLevel": 2
+}
+```
+
+**`serviceRequests.json`**
+```json
+{
+  "requestId": "REQ1",
+  "requestType": "ICTSupportRequest",
+  "requesterId": "S1",
+  "title": "Wi-Fi down",
+  "description": "No access",
+  "location": "Library Level 2",
+  "category": "ICT Support",
+  "priority": "Urgent",
+  "status": "Assigned",
+  "priorityAssigned": true,
+  "assignedTechnicianId": "T1",
+  "dateSubmitted": "2026-10-20T05:48:19.203Z",
+  "dateUpdated": "2026-10-20T05:48:20.410Z",
+  "progressUpdates": [],
+  "specialisedData": {
+    "deviceType": "Laptop",
+    "systemName": "Wi-Fi",
+    "faultType": "Connectivity",
+    "networkImpact": "Department"
+  }
+}
+```
+
+**`requestHistory.json`**
+```json
+{
+  "historyId": "REQ1-H2",
+  "requestId": "REQ1",
+  "previousStatus": "Submitted",
+  "newStatus": "Reviewed",
+  "action": "Reviewed",
+  "actorId": "OFF1",
+  "actorRole": "Service Officer",
+  "comment": "Request reviewed",
+  "dateTime": "2026-10-20T05:48:19.800Z"
+}
+```
+
+**`auditLog.json`**
+```json
+{
+  "auditId": "AUD00005",
+  "actorId": "OFF1",
+  "actorRole": "Service Officer",
+  "action": "Status changed",
+  "requestId": "REQ1",
+  "description": "Status changed from Submitted to Reviewed",
+  "dateTime": "2026-10-20T05:48:19.800Z",
+  "outcome": "Success"
+}
+```
+
+A rejected attempt has an outcome such as `Rejected: Only a Service Officer can close a request.`
+
+### 7.5 Persistence, rollback and error handling
+
+1. **Loading.** `loadAll()` reads a file. A missing file is created as `[]`. An empty file counts as `[]`. Invalid JSON, a non-array value or an unreadable path throws a `RepositoryError` naming the file.
+2. **Saving.** `saveAll()` creates the folder if needed, writes `<file>.tmp`, then renames it over the real file. If anything fails, the temporary file is removed and a `RepositoryError` is thrown.
+3. **Changing a request.** The manager takes a snapshot, applies the change in memory, saves the request and its history, and only then writes the audit entry.
+4. **Rollback.** If saving fails, the request is rebuilt from the snapshot, so memory matches the files again.
+5. **Rejected actions.** If the domain rules refuse an action, nothing is saved. The attempt is audited with `Rejected: <reason>` and the original error is shown.
+6. **Start-up.** If a data file cannot be read, the program prints the error and closes instead of risking an overwrite. A single invalid record is skipped with a warning.
+
+### 7.6 Management reports
+
+| # | Report | Definition |
+|---|---|---|
+| 1 | Requests by Status | Count per status, including zeros. |
+| 2 | Requests by Category | Count per category, including zeros. |
+| 3 | Requests by Priority | Count per priority, including zeros. |
+| 4 | Urgent Requests | Priority `Urgent` and still open, highest priority score first. |
+| 5 | Overdue Requests | Open requests older than their own target resolution hours, most overdue first. |
+| 6 | Requests Assigned to Each Technician | Count and request IDs per Technician, busiest first. |
+| 7 | Completed Requests by Technician | Resolved or Closed requests per Technician. |
+| 8 | Average Resolution Time | Average hours from submission to the `Resolved` entry in the history. |
+| 9 | Request Volume by Campus Location | Count per location, busiest first. |
+
+Open means the status is not `Resolved`, `Closed` or `Cancelled`.
+
+### 7.7 Audit actions
+
+`User registration`, `Request created`, `Request updated`, `Priority changed`, `Technician assigned`, `Status changed` (review and start work), `Progress recorded`, `Request resolved`, `Request closed`, `Request cancelled`.
+
+### 7.8 Automated tests
+
+Run with `node --test`. There are 26 tests in `test/campusService.test.js`. Each test that touches files creates a temporary folder under the system temp directory and deletes it afterwards.
+
+| Area | What is tested |
+|---|---|
+| Valid construction | Users and requests are built with correct values. |
+| Invalid constructor values | Bad year level, blank fields, invalid specialised values, creating the abstract base class. |
+| Duplicate identifiers | Duplicate user and request IDs are rejected. |
+| Role permissions | Wrong role or wrong user is rejected for every protected action. |
+| Status transitions | Illegal jumps, final statuses, full workflow to `Closed`. |
+| Specialised behaviour | Scores, target hours, update rules and category protection per type. |
+| Polymorphism | One collection processed with the same method calls. |
+| Abstract-style methods | Missing overrides throw a clear error. |
+| Saving JSON | Users, requests, history and audit are written as plain data. |
+| Loading and restoring | A new session restores the correct classes and behaviour, then continues the workflow. |
+| Missing or empty files | Created as empty arrays. |
+| File errors | Corrupt JSON, wrong structure, unreadable and unwritable paths, rollback after a failed save. |
+| Invalid data | Invalid requests and users are not saved. Bad saved records are skipped with a warning. |
+| Factory | Unknown types, missing requesters, bad dates and inconsistent data are rejected. |
+| Audit trail | All required actions and fields are recorded, including rejections. |
+| Reports | Grouping, urgent, overdue, Technician, average time and location calculations. |
+
+---
+
+## 8. Folder Structure
+
+```
+campus-service-app/
+├── CampusServiceApp.js          Console menu and user input (entry point)
+├── ServiceRequestManager.js     Workflow, saving, rollback and auditing
+├── ServiceRequest.js            Abstract-style base request
+├── SpecialisedRequests.js       ICT, Maintenance, Cleaning and General request classes
+├── User.js                      Base user class
+├── SpecialisedUsers.js          Student, Staff, Service Officer and Technician classes
+├── Factories.js                 UserFactory and ServiceRequestFactory
+├── FileRepositories.js          JSON file repositories and RepositoryError
+├── ReportGenerator.js           Management reports
+├── package.json                 Scripts: start and test
+├── README.md                    This document
+├── test/
+│   └── campusService.test.js    Automated tests
+└── data/                        Created on first run
+    ├── users.json
+    ├── serviceRequests.json
+    ├── requestHistory.json
+    └── auditLog.json
+```
+
+A file ending in `.tmp` may briefly appear in `data/` while a save is in progress. It is removed or renamed automatically.
+
+---
+
+## 9. Class Responsibilities
+
+### Users
+
+| Class | Responsibility |
+|---|---|
+| `User` | Holds ID, name, email and user type. Validates them, builds the full name, and converts itself to plain data (`toData()`). |
+| `StudentRequester` | Adds programme and year level, and validates them. |
+| `StaffRequester` | Adds department. |
+| `ServiceOfficer` | Adds service section. |
+| `Technician` | Adds technical speciality. |
+
+### Requests
+
+| Class | Responsibility |
+|---|---|
+| `ServiceRequest` | Abstract-style base. Holds common data, status, history and progress notes. Enforces the status flow, role checks and update rules. Converts itself to and from plain data. Requires subclasses to supply the priority score, target hours and summary. |
+| `ICTSupportRequest` | ICT fields and validation, plus its own score, target hours, summary and update rules. |
+| `MaintenanceRequest` | Maintenance fields and validation, plus its own score, target hours, summary and update rules. |
+| `CleaningRequest` | Cleaning fields and validation, plus its own score, target hours, summary and update rules. |
+| `GeneralServiceRequest` | Concrete class for the General Campus Service category, using the shared base behaviour. |
+
+### Application services
+
+| Class | Responsibility |
+|---|---|
+| `ServiceRequestManager` | Keeps the in-memory users and requests. Loads saved data at start-up. Runs each action, saves it, rolls back on failure and writes audit entries. Provides search, filter and sort. |
+| `ReportGenerator` | Calculates the nine management reports and formats them for display. |
+| `UserFactory` | Rebuilds the correct `User` subclass from a saved record. |
+| `ServiceRequestFactory` | Rebuilds the correct request subclass from a saved record, restoring status, dates, history and progress, and validating the result. |
+
+### Persistence
+
+| Class | Responsibility |
+|---|---|
+| `JsonFileRepository` | Shared file logic: `loadAll`, `saveAll`, `create`, `findById`, `update`, `delete`. The only place that uses `fs/promises`. |
+| `UserFileRepository` | Stores `users.json`, keyed by `userId`. |
+| `ServiceRequestFileRepository` | Stores `serviceRequests.json`, with `findByRequester` and `findByTechnician`. |
+| `HistoryFileRepository` | Stores `requestHistory.json`, with `findByRequest` and `replaceForRequest`. |
+| `AuditFileRepository` | Stores `auditLog.json`, assigns audit IDs in `append`, with `findByRequest` and `findByActor`. |
+| `RepositoryError` | The error type for file-reading and file-writing problems. |
+
+### Console
+
+| Module | Responsibility |
+|---|---|
+| `CampusServiceApp.js` | Shows the menu, asks questions, calls the manager and report generator, and prints results or errors. It never reads or writes files. |
+
+---
+
+## 10. User Guide
+
+### 10.1 Requirements and start-up
+
+1. Install [Node.js](https://nodejs.org) version 20 or later. Check with `node -v`.
+2. Open a terminal in the project folder.
+3. Start the program:
+
+```
+node CampusServiceApp.js
+```
+
+(or `npm start`). The first line shows how many users and requests were loaded from the `data` folder. On the first run this is `0` for both.
+
+To run the automated tests:
+
+```
+node --test
+```
+
+(or `npm test`).
+
+### 10.2 Menu
+
+| # | Option | Who normally uses it |
+|---|---|---|
+| 1 | Register User | Everyone |
+| 2 | Submit Service Request | Requesters |
+| 3 | View Request by ID | Everyone |
+| 4 | View My Requests | Requesters |
+| 5 | View All Requests | Everyone |
+| 6 | Update My Request | Requester (owner, while `Submitted`) |
+| 7 | Cancel My Request | Requester (owner, while `Submitted`) |
+| 8 | Search Requests | Everyone |
+| 9 | View Request Summary (count per status) | Everyone |
+| 10 | Review Request | Service Officer |
+| 11 | Assign Priority | Service Officer |
+| 12 | Assign Technician | Service Officer |
+| 13 | Start Work | Assigned Technician |
+| 14 | Record Progress | Assigned Technician |
+| 15 | Resolve Request | Assigned Technician |
+| 16 | Close Request | Service Officer |
+| 17 | Filter Requests | Everyone |
+| 18 | Sort Requests | Everyone |
+| 19 | View Request History | Everyone |
+| 20 | Management Reports | Everyone |
+| 21 | View Audit Log | Everyone |
+| 22 | Process All Requests (polymorphism) | Everyone |
+| 23 | Exit | Everyone |
+
+Type the number and press Enter. Where an optional answer is offered, press Enter to skip it.
+
+### 10.3 Walk-through
+
+**Step 1: Register users (option 1).** Register at least one of each role. Example:
+
+| User ID | Name | Email | Type | Extra details |
+|---|---|---|---|---|
+| `S1` | Ana Kila | ana@wpu.example | Student | Programme `Computing`, year level `2` |
+| `ST1` | Mere Tau | mere@wpu.example | Staff | Department `Library` |
+| `OFF1` | Sam Kopi | sam@wpu.example | Service Officer | Service section `Facilities` |
+| `T1` | Lee Wong | lee@wpu.example | Technician | Speciality `Networks` |
+
+**Step 2: Submit a request (option 2).** Enter the requester's user ID, a new request ID (for example `REQ1`), title, description, campus location, category (type `1` to `4` or the name) and priority (`Low`, `Normal`, `High` or `Urgent`). Then answer the questions for that category:
+
+| Category | Extra questions |
+|---|---|
+| 1. ICT Support | Device type, system name, fault type, network impact (`None`, `Single User`, `Department`, `Campus-wide`) |
+| 2. Facilities Maintenance | Building, room number, hazard level (`Low`, `Medium`, `High`), equipment affected |
+| 3. Cleaning and Sanitation | Cleaning area, hygiene risk (`Low`, `Medium`, `High`), service type, preferred service time |
+| 4. General Campus Service | None |
+
+The request is created with status `Submitted`.
+
+**Step 3: Process the request.** Run these in order, entering the user ID and request ID each time:
+
+| Order | Option | Who | Resulting status |
+|---|---|---|---|
+| 1 | 10 Review Request | Service Officer | `Reviewed` |
+| 2 | 11 Assign Priority | Service Officer | `Reviewed` (priority set) |
+| 3 | 12 Assign Technician | Service Officer | `Assigned` |
+| 4 | 13 Start Work | The assigned Technician | `In Progress` |
+| 5 | 14 Record Progress (optional, repeatable) | The assigned Technician | `In Progress` |
+| 6 | 15 Resolve Request | The assigned Technician | `Resolved` |
+| 7 | 16 Close Request | Service Officer | `Closed` |
+
+**Step 4: Look at the results.**
+
+- **Option 3** shows one request in full, including target resolution hours and priority score.
+- **Option 19** shows the complete history for a request.
+- **Option 22** lists every request with its own priority score and target hours, showing polymorphism.
+- **Option 20** shows the reports. Choose a number from 1 to 9, or 10 for all reports.
+- **Option 21** shows the audit log. Enter a request ID for one request, or press Enter for the latest 20 entries.
+
+**Step 5: Check persistence.** Choose 23 to exit, run the program again, and use option 5 or 3. Your users and requests are still there.
+
+### 10.4 Updating, filtering and sorting
+
+- **Update (6):** Enter the request ID and your user ID, then press Enter to skip any field you do not want to change. For ICT, Maintenance and Cleaning requests the specialised fields are listed too.
+- **Filter (17):** Fill in any of category, status, priority and Technician ID. Leave a question blank to skip it.
+- **Sort (18):** Choose date (oldest or newest first) or priority (highest or lowest first).
+
+### 10.5 Resetting the data
+
+To start fresh, close the program and delete the four files in `data/` (or the whole folder). They are recreated empty on the next start. Always keep `data/` as simulated data only.
+
+### 10.6 Troubleshooting
+
+| Message | Meaning and fix |
+|---|---|
+| `Only a Service Officer can ...` | The ID you entered belongs to a different role. Use a Service Officer's ID. |
+| `Only the assigned Technician can perform this action.` | Use the ID of the Technician assigned to that request. |
+| `Invalid status transition: A -> B` | The request is not at the right stage. See the state diagram in section 6.4. |
+| `A priority must be assigned before assigning a Technician.` | Run option 11 first. |
+| `Only Submitted requests can be updated / cancelled` | The request has already moved on and can no longer be changed by the requester. |
+| `Duplicate user ID` / `Duplicate request ID` | Choose an ID that has not been used. |
+| `User not found` / `Request not found` | Check the ID. IDs are case-sensitive. |
+| `The requester '...' is not a registered user.` | Register the user first (option 1). |
+| `Could not read ...: the file is not valid JSON` | A data file was edited incorrectly. Fix the file, or delete it to start empty. The program closes at start-up rather than overwrite it. |
+| `Could not write ...` | The data folder is read-only, full or locked. Fix the cause and try again. The in-memory change is undone. |
+| `Warning: Skipped saved request ...` | That saved record is invalid. The rest loaded normally, and the bad record is left untouched in the file. |
+| `The change was saved, but the audit record could not be written.` | The action worked, but `auditLog.json` could not be updated. Check the file and folder. |
